@@ -1,4 +1,5 @@
 *.html
+*.bat
 *.txt
 *.pyc
 # Ignore compiled Python files (.pyc)

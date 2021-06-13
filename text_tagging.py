@@ -23,5 +23,6 @@ def tag_text_of_type(tag_type,data):
         index+=1
     return text_of_tag
 def tag_text_quotes(text):
+    #Detects all info in single or double quotes, and outputs all these as strings in a list
     matches=re.findall(r'\"(.+?)\"',text)
     return matches
