@@ -9,6 +9,7 @@ The application ensures proper nouns (explicitly named people/places/things) and
 Additionally, quotes (any text enclosed by single or double quotes) are checked to see if they are present in any citation or external link.
 
 ## To run:
+* Have Python 3 installed
 * (OPTIONAL, but recommended) Install and use a virtualenv (not included)
 
 When in the directory the files have been saved:
