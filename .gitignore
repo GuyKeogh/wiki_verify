@@ -1,5 +1,4 @@
 *.bat
-*.txt
 *.pyc
 # Ignore compiled Python files (.pyc)
 __pycache__
