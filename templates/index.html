@@ -1,0 +1,17 @@
+<html>
+	<head>
+		<title>Evaluate article tool</title>
+	</head>
+
+	<body>
+		<form action="/article" method="POST" id="articleForm">
+		  <div>
+			<label for="name">Enter the article title:</label>
+			<input type="text" id="name" name="name">
+		  </div>
+		<br>
+		<button onclick="document.getElementById('articleForm').submit()">Submit</button>
+		</form>
+		<font color="red">{{error_message}}</font>
+	</body>
+</html>
