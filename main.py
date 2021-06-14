@@ -13,28 +13,23 @@ def eval_citation(citation_text):
     return set(data)
 
 def eval_citation_for_type(citation_text, key):
-    #Only output words of specific type
+    #Only output words of specific type stated in key
     unique_terms_cite = []
     for word in citation_text:
         if key in word[1]: 
             unique_terms_cite.append(word[0])
     return unique_terms_cite
+
 def check_quote_in_text(quote_string,citation_text):
     if(citation_text.find(quote_string) != -1):
         return True
     else:
         return False
 
-#False:
-if_detect_NN = False
-if_detect_JJ = False
-
-#True:
-if_detect_NNP = True
-if_detect_quote = True
-if_ignore_URL_error = True
-
-def main(article_title):
+def main(article_title,
+         if_ignore_URL_error = True,
+         if_detect_quote = True, if_detect_NNP = True, if_detect_JJ = False, if_detect_NN = False
+         ):
     #Download article
     try:
         original_text = programIO.download_article(article_title)
@@ -49,15 +44,11 @@ def main(article_title):
     
     
     for heading in reversed(headings):
-        #print(heading)
         article_text = article_text[:heading[1]] + ' _BREAK1_ ' + article_text[heading[1]:]
         article_text = article_text[:heading[0]] + ' _BREAK2_ ' + article_text[heading[0]:]
         
     data = text_tagging.tag_data(article_text)
-    
-    #Strip headings
 
-    #print(text)
     external_URLs = []
     external_URLs = programIO.download_external_URLs(article_title)
     #print("Loaded external URLs: ",external_URLs)
@@ -73,17 +64,18 @@ def main(article_title):
         text = citation_get.get_citation(URL)
         if(text != "404"):
             try:
+                tokenized_citation = eval_citation(text)
                 #NN
                 if(if_detect_NN):
-                    citetext_NN = eval_citation_for_type(eval_citation(text), 'NN')
+                    citetext_NN = eval_citation_for_type(tokenized_citation, 'NN')
                     unique_terms_citations_NN = unique_terms_citations_NNP + citetext_NN
                 #NNP
                 if(if_detect_NNP):
-                    citetext_NNP = eval_citation_for_type(eval_citation(text), 'NNP')
+                    citetext_NNP = eval_citation_for_type(tokenized_citation, 'NNP')
                     unique_terms_citations_NNP = unique_terms_citations_NNP + citetext_NNP
                 #JJ
                 if(if_detect_JJ):
-                    citetext_JJ = eval_citation_for_type(eval_citation(text), 'JJ')
+                    citetext_JJ = eval_citation_for_type(tokenized_citation, 'JJ')
                     unique_terms_citations_JJ = unique_terms_citations_JJ + citetext_JJ
                 
                 #programIO.write_file(text,str(citeindex))
@@ -93,7 +85,8 @@ def main(article_title):
                 print("Error with URL '",URL,"' with error ",exc)
         elif(if_ignore_URL_error == False):
             text = input("Copy and paste text of above URL, or leave blank: ")
-            citetext_NNP = eval_citation_for_type(eval_citation(text), 'NNP')
+            tokenized_citation = eval_citation(text)
+            citetext_NNP = eval_citation_for_type(tokenized_citation, 'NNP')
             unique_terms_citations_NNP = unique_terms_citations_NNP + citetext_NNP
         citeindex+=1
     

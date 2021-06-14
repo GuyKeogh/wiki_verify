@@ -12,7 +12,7 @@ def index():
 @app.route('/article', methods = ["POST"])
 def article():
     POST_name = request.form["name"]
-    html_output = main.main(POST_name)
+    html_output = main.main(POST_name, if_ignore_URL_error=True)
     if(html_output!="500"):
         return render_template("article.html", text = html_output, name = POST_name)
     else:

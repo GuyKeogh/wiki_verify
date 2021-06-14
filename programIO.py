@@ -24,8 +24,6 @@ def download_external_URLs(article_title):
     'titles': article_title,
     'format': 'json',
     'prop': 'extlinks',
-    #'explaintext': True,
-    #'exsectionformat': 'plain',
     }
     ).json()
     page = next(iter(response['query']['pages'].values()))
@@ -37,7 +35,7 @@ def download_external_URLs(article_title):
         for key, value in element.items():
             external_URLs.append(value)
     
-    #Make sure all URLs unique, e.g. as an external URL might be repeated twice, so don't download it twice
+    #Make sure all URLs unique, e.g. an external URL might be repeated twice, so don't download it twice
     return set(external_URLs)
 
 def load_file(file_name):

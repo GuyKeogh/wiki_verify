@@ -1,5 +1,6 @@
-flask
 nltk
 requests
 beautifulsoup4
+webbrowser
+flask
 waitress
