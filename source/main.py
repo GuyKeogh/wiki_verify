@@ -25,10 +25,18 @@ def check_quote_in_text(quote_string,citation_text):
         return True
     else:
         return False
+def tag_comparisons(term,text_of_tag,unique_terms_citations_of_tag,data):
+    for elem in text_of_tag:
+        if(data[elem[1]][2] != 'pass'):
+            if elem[0] not in unique_terms_citations_of_tag:
+                data[elem[1]][2] = 'fail'
+            else:
+                data[elem[1]][2] = 'pass'
+    return data
 
 def main(article_title,
          if_ignore_URL_error = True,
-         if_detect_quote = True, if_detect_NNP = True, if_detect_JJ = False, if_detect_NN = False
+         if_detect_quote = True, if_detect_NNP = True, if_detect_JJ = False, if_detect_NN = False, if_detect_CD = True
          ):
     #Download article
     try:
@@ -57,6 +65,7 @@ def main(article_title,
     unique_terms_citations_NNP = []
     unique_terms_citations_NN = []
     unique_terms_citations_JJ = []
+    unique_terms_citations_CD = []
     citation_text= []
     citeindex = 0
     for URL in external_URLs:
@@ -65,18 +74,22 @@ def main(article_title,
         if(text != "404"):
             try:
                 tokenized_citation = eval_citation(text)
-                #NN
+                #NN (Proper noun, singular)
                 if(if_detect_NN):
                     citetext_NN = eval_citation_for_type(tokenized_citation, 'NN')
                     unique_terms_citations_NN = unique_terms_citations_NNP + citetext_NN
-                #NNP
+                #NNP (Proper noun, plural)
                 if(if_detect_NNP):
                     citetext_NNP = eval_citation_for_type(tokenized_citation, 'NNP')
                     unique_terms_citations_NNP = unique_terms_citations_NNP + citetext_NNP
-                #JJ
+                #JJ (Adjective)
                 if(if_detect_JJ):
                     citetext_JJ = eval_citation_for_type(tokenized_citation, 'JJ')
                     unique_terms_citations_JJ = unique_terms_citations_JJ + citetext_JJ
+                #CD (Cardinal number)
+                if(if_detect_CD):
+                    citetext_CD = eval_citation_for_type(tokenized_citation, 'CD')
+                    unique_terms_citations_CD = unique_terms_citations_CD + citetext_CD
                 
                 #programIO.write_file(text,str(citeindex))
                 
@@ -90,39 +103,24 @@ def main(article_title,
             unique_terms_citations_NNP = unique_terms_citations_NNP + citetext_NNP
         citeindex+=1
     
-    #Detect dates in Wikipedia text ...
-    #... not yet implemented
-    
+    #Compare unique citation terms of specific type and article text of the same type
     text_JJ = []
     text_NN = []
     text_NNP = []
-    
+    text_CD = []
     if(if_detect_JJ):
         text_JJ = text_tagging.tag_text_of_type("JJ",data)
-        for elem in text_JJ:
-            if(data[elem[1]][2] != 'pass'):
-                if elem[0] not in unique_terms_citations_JJ:
-                    data[elem[1]][2] = 'fail'
-                else:
-                    data[elem[1]][2] = 'pass'
-    
+        data = tag_comparisons("JJ",text_JJ,unique_terms_citations_JJ,data)
     if(if_detect_NNP):
         text_NNP = text_tagging.tag_text_of_type("NNP",data)
-        for elem in text_NNP:
-            if(data[elem[1]][2] != 'pass'):
-                if elem[0] not in unique_terms_citations_NNP:
-                    data[elem[1]][2] = 'fail'
-                else:
-                    data[elem[1]][2] = 'pass'
-
+        data = tag_comparisons("NNP",text_NNP,unique_terms_citations_NNP,data)
     if(if_detect_NN):
         text_NN = text_tagging.tag_text_of_type("NN",data)
-        for elem in text_NN:
-            if(data[elem[1]][2] != 'pass'):
-                if elem[0] not in unique_terms_citations_NN:
-                    data[elem[1]][2] = 'fail' 
-                else:
-                    data[elem[1]][2] = 'pass'
+        data = tag_comparisons("NN",text_NN,unique_terms_citations_NN,data)
+    if(if_detect_CD):
+        text_CD = text_tagging.tag_text_of_type("CD",data)
+        data = tag_comparisons("CD",text_CD,unique_terms_citations_CD,data)
+    
     #Compare quotes
     if(if_detect_quote):
         for quote in text_quotes:

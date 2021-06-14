@@ -1,10 +1,17 @@
 # Wikipedia article factchecker
 
 ## Introduction
-This is a Python application to assist in fact-checking Wikipedia articles by automating comparisons between the Wikipedia article text, and links and citations within that article. This can be hosted (locally by default), or used as a standalone Python application.
+This is a Python application which uses a heuristic approach to assist in fact-checking Wikipedia articles by automating comparisons between the Wikipedia article text, and links and citations within that article. This can be hosted (locally by default), or used as a standalone Python application.
+
+### Methodology
+The application ensures proper nouns (explicitly named people/places/things) and numbers used in an article are present within any citation or external link within the page. This is easily doable as proper nouns and numbers cannot be modified much in language, a contrast to adjectives, verbs, etc, and so proper nouns and numbers can typically be directly compared for between different texts. This ensures the article matches the general information within the source text.
+
+Additionally, quotes (any text enclosed by single or double quotes) are checked to see if they are present in any citation or external link.
 
 ## To run:
 * (OPTIONAL, but recommended) Install and use a virtualenv (not included)
+
+When in the directory the files have been saved:
 * Run 'pip3 install -r requirements.txt'
 * Run 'python app.py' to use the locally hosted web app, or 'python standalone.py' for the Python application
 * (WEB APP) Go to 'http://localhost:5000' in a browser on the same computer
@@ -16,23 +23,14 @@ When the above is followed after a few seconds a HTML page will open. With the w
 
 Text that needs to be checked is marked in red, while text that appears to be fine is marked in green. If there is no marking that text has not been checked. Marked text can be hovered over to see information about the text.
 
-## Current comparisons
-The following comparisons are made between the Wikipedia article and its citations:
-* Proper nouns, i.e. a specifically named person/place/thing
-* Quotations
-
-These comparisons work especially well for biographies.
-
-If these are used in the article but not present in any links or citations in the article, and the citation was properly downloaded, then that text might be spelled differently, uncited, or outright fabricated.
-
 ## Current limitations
 * This is not definitive. It flags things that need double checking to make the fact-checking process easier.
-* This tool does not translate. If citations are in a different language to the article the comparison will not work.
+* This tool does not translate. If citations are in a different language to the article the comparison might not work, so valid text might be marked as needing to be checked.
 
 As this is currently a proof-of-concept tool:
-* It doesn't have rate limiting or multithreading
+* It makes direct comparisons. If a word is spelled differently between the texts or a quotation has a clarification inside it that's not present in the source text, then it will be flagged as needing to be checked.
+* It doesn't have rate limiting or multithreading.
 * This currently only automatically extracts the text in raw HTML, and does not handle PDFs, redirects, server-side refusals to deliver text, etc. If an issue is detected, currently only the **standalone** program will ask you to copy-and-paste this text which will otherwise be ignored.
-* Use it on small/medium sized articles only as it downloads and makes comparisons against the plain-HTML every single external link in that article.
 
 ## requirements.txt
 To download page JSON and HTML, and extract the raw text from these:
