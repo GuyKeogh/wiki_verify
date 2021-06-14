@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, render_template
 from os import urandom
 import main
 
@@ -16,4 +16,11 @@ def article():
     return render_template("article.html", text = html_output, name = POST_name)
 
 if __name__ == '__main__':
-	app.run(debug = True, port=5000)
+    if_production = True
+    if(if_production==True):
+        print("Starting production server...")
+        from waitress import serve
+        serve(app, host="localhost", port=5000)
+    else:
+        print("Starting debug server...")
+        app.run(debug = True, port=5000)
