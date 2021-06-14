@@ -1,6 +1,6 @@
 import webbrowser
-import programIO
-import main
+from source import programIO
+from source import main
 
 def main_standalone():
     article_title = input("Enter the article title: ")

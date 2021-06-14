@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template
 from os import urandom
-import main
+from source import main
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = str(urandom(24));

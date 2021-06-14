@@ -1,9 +1,9 @@
 import nltk
 from nltk import word_tokenize
-import article_standardise
-import programIO
-import text_tagging
-import citation_get
+from source import article_standardise
+from source import programIO
+from source import text_tagging
+from source import citation_get
 
 def eval_citation(citation_text):
     sentences = nltk.sent_tokenize(citation_text) #Organize into individual sentences
