@@ -1,7 +1,7 @@
 # Wikipedia article factchecker
 
 ## Introduction
-This is currently a proof-of-concept Python application to assist in fact-checking Wikipedia articles by automating comparisons between the Wikipedia article text, and links and citations within that article. This can be hosted (locally by default), or used as a standalone Python application.
+This is a Python application to assist in fact-checking Wikipedia articles by automating comparisons between the Wikipedia article text, and links and citations within that article. This can be hosted (locally by default), or used as a standalone Python application.
 
 ## To run:
 * (OPTIONAL, but recommended) Install and use a virtualenv (not included)

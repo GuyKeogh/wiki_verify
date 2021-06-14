@@ -1,7 +1,8 @@
+from bs4 import BeautifulSoup    
+import requests
+
 #https://matix.io/extract-text-from-webpage-using-beautifulsoup-and-python/
 def get_URL_text(URL):
-    from bs4 import BeautifulSoup    
-    import requests
     try:
         res = requests.get(URL)
         
