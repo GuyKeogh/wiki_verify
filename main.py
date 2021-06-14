@@ -36,7 +36,10 @@ if_ignore_URL_error = True
 
 def main(article_title):
     #Download article
-    original_text = programIO.download_article(article_title)
+    try:
+        original_text = programIO.download_article(article_title)
+    except:
+        return "500"
 
     article_text = article_standardise.strip_end_sections(original_text)
     #Detect quotes and compare to source

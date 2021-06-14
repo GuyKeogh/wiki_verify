@@ -13,7 +13,10 @@ def index():
 def article():
     POST_name = request.form["name"]
     html_output = main.main(POST_name)
-    return render_template("article.html", text = html_output, name = POST_name)
+    if(html_output!="500"):
+        return render_template("article.html", text = html_output, name = POST_name)
+    else:
+        return render_template("index.html", error_message = "The article does not exist, or another error occurred.")
 
 if __name__ == '__main__':
     if_production = True
