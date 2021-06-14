@@ -57,7 +57,7 @@ def detect_headings(text):
                 if(if_title == True):
                     end = index
                     start = index - title_index
-                    print("Start: ",start," end: ",end)
+                    #print("Start: ",start," end: ",end)
                     title_indexes.append(tuple((start,end)))
                 if_title = False
         else:
@@ -68,7 +68,7 @@ def detect_headings(text):
                 title_index = 0
         index+=1
             
-    print(title_indexes)
+    #print(title_indexes)
     return title_indexes
 
 #Load article

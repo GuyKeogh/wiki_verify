@@ -3,7 +3,6 @@ from nltk import word_tokenize
 import article_standardise
 import programIO
 import text_tagging
-import webbrowser
 import citation_get
 
 def eval_citation(citation_text):
@@ -25,6 +24,7 @@ def check_quote_in_text(quote_string,citation_text):
         return True
     else:
         return False
+
 #False:
 if_detect_NN = False
 if_detect_JJ = False
@@ -32,10 +32,9 @@ if_detect_JJ = False
 #True:
 if_detect_NNP = True
 if_detect_quote = True
+if_ignore_URL_error = True
 
-def main():
-    article_title = input("Enter the article title: ")
-    
+def main(article_title):
     #Download article
     original_text = programIO.download_article(article_title)
 
@@ -47,7 +46,7 @@ def main():
     
     
     for heading in reversed(headings):
-        print(heading)
+        #print(heading)
         article_text = article_text[:heading[1]] + ' _BREAK1_ ' + article_text[heading[1]:]
         article_text = article_text[:heading[0]] + ' _BREAK2_ ' + article_text[heading[0]:]
         
@@ -89,26 +88,14 @@ def main():
                 citation_text.append(text)
             except Exception as exc:
                 print("Error with URL '",URL,"' with error ",exc)
-        else:
+        elif(if_ignore_URL_error == False):
             text = input("Copy and paste text of above URL, or leave blank: ")
             citetext_NNP = eval_citation_for_type(eval_citation(text), 'NNP')
             unique_terms_citations_NNP = unique_terms_citations_NNP + citetext_NNP
         citeindex+=1
     
-    #Detect dates in Wikipedia text
-    #import datefinder
-    #article_dates = datefinder.find_dates(article_text)
-    #print(article_dates)
-    #index = 0
-    #for date in article_dates:
-    #    print(index,"",date)
-    #    index+=1
-    #
-    #Detect dates in citation text
-    #citation_dates = []
-    #for citation in citation_text:
-    #    citation_dates.append(datefinder.find_dates(article_text))
-    #print(citation_dates)
+    #Detect dates in Wikipedia text ...
+    #... not yet implemented
     
     text_JJ = []
     text_NN = []
@@ -184,9 +171,6 @@ def main():
                         quote_in_data_startword = 0
                 index+=1
     
-    #Write html output and open:
+    #Write html output as string:
     html_output = programIO.parse_HTML(data)
-    programIO.write_file(html_output,"article.html")
-    webbrowser.open("article.html")
-
-main()
+    return html_output
