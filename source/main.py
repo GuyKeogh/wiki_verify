@@ -1,3 +1,9 @@
+"""
+__description__ = "Backend of verification tool"
+__author__ = "Guy Keogh"
+__license__ = "BSD 2-Clause"
+"""
+
 import nltk
 from nltk import word_tokenize
 from source import article_standardise

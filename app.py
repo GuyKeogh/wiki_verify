@@ -1,3 +1,9 @@
+"""
+__description__ = "Front-end for the web-app"
+__author__ = "Guy Keogh"
+__license__ = "BSD 2-Clause"
+"""
+
 from flask import Flask, request, render_template
 from os import urandom
 from source import main

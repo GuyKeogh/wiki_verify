@@ -1,5 +1,11 @@
+"""
+__description__ = "Downloads Wikipedia article text + its external links,
+allows saving/writing files, and HTML parsing for final output"
+__author__ = "Guy Keogh"
+__license__ = "BSD 2-Clause"
+"""
+
 import requests
-#Download article
 def download_article(article_title):
     response = requests.get(
     'https://en.wikipedia.org/w/api.php',

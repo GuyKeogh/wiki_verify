@@ -1,3 +1,10 @@
+"""
+__description__ = "Standardises downloaded Wikipedia article to a consistent format that can be 
+processed better such as making punctuation fixes, stripping end-sections, etc."
+__author__ = "Guy Keogh"
+__license__ = "BSD 2-Clause"
+"""
+
 def space_after_punctuation(data):
     #Add spaces after . and ,
     prior_elem_was_punctuation = False

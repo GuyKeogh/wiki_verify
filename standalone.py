@@ -1,3 +1,9 @@
+"""
+__description__ = "Front-end for standalone program"
+__author__ = "Guy Keogh"
+__license__ = "BSD 2-Clause"
+"""
+
 import webbrowser
 from source import programIO
 from source import main

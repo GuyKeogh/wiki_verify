@@ -8,9 +8,6 @@ import re
 def filter_title(badtitle):
     #Remove excess whitespaces
     output = re.sub("\s\s+" , " ", badtitle.strip())
-    
-    #NB: act on Question marks and plus signs
-    
     return output
 
 def if_title_invalid_symbol_use(title): #If the title has an invalid name besides spaces, return True
@@ -39,7 +36,6 @@ def if_title_invalid_symbol_use(title): #If the title has an invalid name beside
     for symbol in first_char_blacklist:
         if(symbol==title[0]):
             return True
-    
     
     #Symbols not allowed as last character:
     last_char_blacklist = [

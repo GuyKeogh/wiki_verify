@@ -1,3 +1,9 @@
+"""
+__description__ = "Raw text processing, by tagging word types with NLTK, and detecting quotes"
+__author__ = "Guy Keogh"
+__license__ = "BSD 2-Clause"
+"""
+
 import nltk
 import re #Regex
 def tag_data(text):
