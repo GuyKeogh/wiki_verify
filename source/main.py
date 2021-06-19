@@ -3,7 +3,6 @@ __description__ = "Backend of verification tool"
 __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
-
 import nltk
 from nltk import word_tokenize
 from source import article_standardise
@@ -44,30 +43,27 @@ def main(article_title,
          if_ignore_URL_error = True,
          if_detect_quote = True, if_detect_NNP = True, if_detect_JJ = False, if_detect_NN = False, if_detect_CD = True
          ):
-    #Download article
-    try:
+    
+    try: #Download article
         original_text = programIO.download_article(article_title)
     except:
         return "500"
-
+    
     article_text = article_standardise.strip_end_sections(original_text)
-    #Detect quotes and compare to source
+    
     text_quotes = text_tagging.tag_text_quotes(article_text)
     article_text = article_standardise.space_after_punctuation(article_text)
     headings = article_standardise.detect_headings(article_text)
     
-    
     for heading in reversed(headings):
         article_text = article_text[:heading[1]] + ' _BREAK1_ ' + article_text[heading[1]:]
         article_text = article_text[:heading[0]] + ' _BREAK2_ ' + article_text[heading[0]:]
-        
+    
     data = text_tagging.tag_data(article_text)
-
-    external_URLs = []
+    
+    #Handle citations:
     external_URLs = programIO.download_external_URLs(article_title)
-    #print("Loaded external URLs: ",external_URLs)
-
-    #Download citations
+    
     unique_terms_citations_NNP = []
     unique_terms_citations_NN = []
     unique_terms_citations_JJ = []
@@ -79,6 +75,8 @@ def main(article_title,
         text = citation_get.get_citation(URL)
         if(text != "404"):
             try:
+                #programIO.write_file(text,str(citeindex)) #Save citation text to file
+                
                 tokenized_citation = eval_citation(text)
                 #NN (Proper noun, singular)
                 if(if_detect_NN):
@@ -96,9 +94,7 @@ def main(article_title,
                 if(if_detect_CD):
                     citetext_CD = eval_citation_for_type(tokenized_citation, 'CD')
                     unique_terms_citations_CD = unique_terms_citations_CD + citetext_CD
-                
-                #programIO.write_file(text,str(citeindex))
-                
+
                 citation_text.append(text)
             except Exception as exc:
                 print("Error with URL '",URL,"' with error ",exc)
@@ -134,10 +130,6 @@ def main(article_title,
             for citation in citation_text:
                 if(ifTrue == False): #Just needs to be in one citation
                     ifTrue = check_quote_in_text(quote,citation)
-            if(ifTrue == False):
-                print("Quote NOT verified: ",quote)
-            else:
-                print("Quote verified: ",quote)
             
             quote_in_data_startword = 0
             index = 0
@@ -148,21 +140,17 @@ def main(article_title,
             for word in data:
                 if(if_in_quote==False):
                     if(word[0]==quote_list[0]):
-                        #print("Found first word in quote")
                         if_in_quote = True
                         quote_in_data_startword = index
                 else: #If we seem to be in a quote, check it's still true
                     if(len(quote_list)==index-quote_in_data_startword): #Successfully detected a quote
-                        #print("Found quote ",quote, " starting at ",quote_in_data_startword)
                         for k in range(quote_in_data_startword,index,1):
                             if ifTrue == False:
                                 data[k][1] = 'quote'
                                 data[k][2] = 'fail'
-                                #print(data[k])
                             else:
                                 data[k][1] = 'quote'
                                 data[k][2] = 'pass'
-                                #print(data[k])
                         
                         if_in_quote = False
                         quote_in_data_startword = 0
@@ -170,7 +158,7 @@ def main(article_title,
                         if_in_quote = False
                         quote_in_data_startword = 0
                 index+=1
-    
+
     #Write html output as string:
     html_output = programIO.parse_HTML(data)
     return html_output

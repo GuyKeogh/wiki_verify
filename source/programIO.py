@@ -55,18 +55,24 @@ def write_file(input_text,file_name):
     file.write(input_text)
     file.close()
 
-def parse_HTML(data):
+def parse_HTML(data):    
     combined = ""
     for word in data:
-        #print(word)
+        article_word = encode_text(word[0])
         if(word[0] == "_BREAK2_"):
             combined = combined + "<br><br><strong>"
         elif(word[0] == "_BREAK1_"):
             combined = combined + "</strong><br>"
         elif(word[2] == 'fail'):
-            combined = combined + ''' <span title="'''+word[1]+'''" style="background-color: #ff0000">''' + word[0] + "</span>"
+            combined = combined + ''' <span title="'''+word[1]+'''" style="background-color: #ff0000">''' + article_word + "</span>"
         elif(word[2] == 'pass'):
-            combined = combined + ''' <span title="'''+word[1]+'''" style="background-color: #00ff00">''' + word[0] + "</span>"
+            combined = combined + ''' <span title="'''+word[1]+'''" style="background-color: #00ff00">''' + article_word + "</span>"
         else:
-            combined = combined + " " + word[0]
+            combined = combined + " " + article_word
     return combined
+
+def encode_text(text):
+    #Encode data to help prevent XSS attacks from text in article:
+    #Most efficient way is to chain these together ( https://stackoverflow.com/questions/3411771/best-way-to-replace-multiple-characters-in-a-string )
+    text = text.replace('&','&amp').replace('<','&lt').replace('>','&gt').replace('"','&quot').replace("'",'&#x27')
+    return text
