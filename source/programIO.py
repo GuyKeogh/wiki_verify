@@ -55,6 +55,11 @@ def write_file(input_text,file_name):
     file.write(input_text)
     file.close()
 
+def append_to_file(input_text,file_name):
+    file = open(file_name, "a")
+    file.write(input_text)
+    file.close()
+
 def parse_HTML(data):    
     combined = ""
     for word in data:

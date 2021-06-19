@@ -45,7 +45,7 @@ if __name__ == '__main__':
     if(if_production==True):
         print("Starting production server...")
         from waitress import serve
-        serve(app, host="localhost", port=5000)
+        serve(app, host="localhost", port=8080, url_scheme="https")
     else:
         print("Starting debug server...")
-        app.run(debug = True, port=5000)
+        app.run(debug = True, port=8080)

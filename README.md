@@ -15,7 +15,7 @@ Additionally, quotes (any text enclosed by single or double quotes) are checked 
 When in the directory the files have been saved:
 * Run 'pip3 install -r requirements.txt'
 * Run 'python app.py' to use the locally hosted web app, or 'python standalone.py' for the Python application
-* (WEB APP) Go to 'http://localhost:5000' in a browser on the same computer
+* (WEB APP) Go to 'http://localhost:8080' in a browser on the same computer
 * Enter a valid Wikipedia article name and submit
 
 ## Usage
