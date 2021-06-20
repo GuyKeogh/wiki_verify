@@ -39,7 +39,7 @@ def tag_comparisons(term,text_of_tag,unique_terms_citations_of_tag,data):
                 data[elem[1]][2] = 'pass'
     return data
 
-def main(article_title,
+def main(article_title,language="en",
          if_ignore_URL_error = True,
          if_detect_quote = True, if_detect_NNP = True, if_detect_JJ = False, if_detect_NN = False, if_detect_CD = True
          ):
@@ -61,67 +61,73 @@ def main(article_title,
     
     data = text_tagging.tag_data(article_text)
     
+    if_evaluate_citations=True
+    if(if_detect_quote==False and if_detect_NNP==False and if_detect_JJ==False
+       and if_detect_NN==False and if_detect_CD==False):
+        if_evaluate_citations=False #If we're not doing anything with the citations, don't download or process them
+    
     #Handle citations:
-    external_URLs = programIO.download_external_URLs(article_title)
+    if(if_evaluate_citations):
+        external_URLs = programIO.download_external_URLs(article_title)
+        
+        unique_terms_citations_NNP = []
+        unique_terms_citations_NN = []
+        unique_terms_citations_JJ = []
+        unique_terms_citations_CD = []
+        citation_text= []
+        citeindex = 0
+        for URL in external_URLs:
+            #text = programIO.load_file(str(citeindex))
+            text = citation_get.get_citation(URL)
+            if(text != "404"):
+                try:
+                    #programIO.write_file(text,str(citeindex)) #Save citation text to file
+                    
+                    tokenized_citation = eval_citation(text)
+                    #NN (Proper noun, singular)
+                    if(if_detect_NN):
+                        citetext_NN = eval_citation_for_type(tokenized_citation, 'NN')
+                        unique_terms_citations_NN = unique_terms_citations_NNP + citetext_NN
+                    #NNP (Proper noun, plural)
+                    if(if_detect_NNP):
+                        citetext_NNP = eval_citation_for_type(tokenized_citation, 'NNP')
+                        unique_terms_citations_NNP = unique_terms_citations_NNP + citetext_NNP
+                    #JJ (Adjective)
+                    if(if_detect_JJ):
+                        citetext_JJ = eval_citation_for_type(tokenized_citation, 'JJ')
+                        unique_terms_citations_JJ = unique_terms_citations_JJ + citetext_JJ
+                    #CD (Cardinal number)
+                    if(if_detect_CD):
+                        citetext_CD = eval_citation_for_type(tokenized_citation, 'CD')
+                        unique_terms_citations_CD = unique_terms_citations_CD + citetext_CD
     
-    unique_terms_citations_NNP = []
-    unique_terms_citations_NN = []
-    unique_terms_citations_JJ = []
-    unique_terms_citations_CD = []
-    citation_text= []
-    citeindex = 0
-    for URL in external_URLs:
-        #text = programIO.load_file(str(citeindex))
-        text = citation_get.get_citation(URL)
-        if(text != "404"):
-            try:
-                #programIO.write_file(text,str(citeindex)) #Save citation text to file
-                
+                    citation_text.append(text)
+                except Exception as exc:
+                    print("Error with URL '",URL,"' with error ",exc)
+            elif(if_ignore_URL_error == False):
+                text = input("Copy and paste text of above URL, or leave blank: ")
                 tokenized_citation = eval_citation(text)
-                #NN (Proper noun, singular)
-                if(if_detect_NN):
-                    citetext_NN = eval_citation_for_type(tokenized_citation, 'NN')
-                    unique_terms_citations_NN = unique_terms_citations_NNP + citetext_NN
-                #NNP (Proper noun, plural)
-                if(if_detect_NNP):
-                    citetext_NNP = eval_citation_for_type(tokenized_citation, 'NNP')
-                    unique_terms_citations_NNP = unique_terms_citations_NNP + citetext_NNP
-                #JJ (Adjective)
-                if(if_detect_JJ):
-                    citetext_JJ = eval_citation_for_type(tokenized_citation, 'JJ')
-                    unique_terms_citations_JJ = unique_terms_citations_JJ + citetext_JJ
-                #CD (Cardinal number)
-                if(if_detect_CD):
-                    citetext_CD = eval_citation_for_type(tokenized_citation, 'CD')
-                    unique_terms_citations_CD = unique_terms_citations_CD + citetext_CD
-
-                citation_text.append(text)
-            except Exception as exc:
-                print("Error with URL '",URL,"' with error ",exc)
-        elif(if_ignore_URL_error == False):
-            text = input("Copy and paste text of above URL, or leave blank: ")
-            tokenized_citation = eval_citation(text)
-            citetext_NNP = eval_citation_for_type(tokenized_citation, 'NNP')
-            unique_terms_citations_NNP = unique_terms_citations_NNP + citetext_NNP
-        citeindex+=1
-    
-    #Compare unique citation terms of specific type and article text of the same type
-    text_JJ = []
-    text_NN = []
-    text_NNP = []
-    text_CD = []
-    if(if_detect_JJ):
-        text_JJ = text_tagging.tag_text_of_type("JJ",data)
-        data = tag_comparisons("JJ",text_JJ,unique_terms_citations_JJ,data)
-    if(if_detect_NNP):
-        text_NNP = text_tagging.tag_text_of_type("NNP",data)
-        data = tag_comparisons("NNP",text_NNP,unique_terms_citations_NNP,data)
-    if(if_detect_NN):
-        text_NN = text_tagging.tag_text_of_type("NN",data)
-        data = tag_comparisons("NN",text_NN,unique_terms_citations_NN,data)
-    if(if_detect_CD):
-        text_CD = text_tagging.tag_text_of_type("CD",data)
-        data = tag_comparisons("CD",text_CD,unique_terms_citations_CD,data)
+                citetext_NNP = eval_citation_for_type(tokenized_citation, 'NNP')
+                unique_terms_citations_NNP = unique_terms_citations_NNP + citetext_NNP
+            citeindex+=1
+        
+        #Compare unique citation terms of specific type and article text of the same type
+        text_JJ = []
+        text_NN = []
+        text_NNP = []
+        text_CD = []
+        if(if_detect_JJ):
+            text_JJ = text_tagging.tag_text_of_type("JJ",data)
+            data = tag_comparisons("JJ",text_JJ,unique_terms_citations_JJ,data)
+        if(if_detect_NNP):
+            text_NNP = text_tagging.tag_text_of_type("NNP",data)
+            data = tag_comparisons("NNP",text_NNP,unique_terms_citations_NNP,data)
+        if(if_detect_NN):
+            text_NN = text_tagging.tag_text_of_type("NN",data)
+            data = tag_comparisons("NN",text_NN,unique_terms_citations_NN,data)
+        if(if_detect_CD):
+            text_CD = text_tagging.tag_text_of_type("CD",data)
+            data = tag_comparisons("CD",text_CD,unique_terms_citations_CD,data)
     
     #Compare quotes
     if(if_detect_quote):

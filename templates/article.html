@@ -1,12 +1,35 @@
+<!DOCTYPE html>
 <html>
-<head>
-	<meta charset="UTF-8">
-	<title>Article evaluation</title>
-</head>
+	<head>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" href="{{ url_for('static',filename='bootstrap.css') }}">
+		<link rel="stylesheet" href="../static/bootstrap.css">
+		<title>{{page}} - verify.toolforge.org</title>
+	</head>
+	<div class="container pt-3">
+		<header>
+			<center>
+			<nav>
+				<a class="hyperlink p-2 text-dark" href="/">📝</a> |
+				<a class="hyperlink p-2 text-dark" href="https://en.wikipedia.org/wiki/User:Guy_Keogh/verify">Manual</a> |
+				<a class="hyperlink p-2 text-dark" href="https://github.com/GuyKeogh/wiki_verify">Source</a> |
+				<a class="hyperlink p-2 text-dark" href="https://en.wikipedia.org/wiki/User_talk:Guy_Keogh">Feedback</a>
+			</nav>
+			<center>
+		</header>
 
-<body>
-	<h2>Evaluation of article '{{name}}'</h2>
-	
-	{{text | safe}}
-</body>
+	<body>
+		<center><h2>{{page}}</h2></center>
+		{{text | safe}}
+		<br>
+	</body>
+
+	<footer class="footer">
+		<div class="container text-center p-3">
+			<nav>
+				User-generated content from {{language}}.wikipedia.org. Tool by <a class="hyperlink" href="https://en.wikipedia.org/wiki/User:Guy_Keogh">Guy Keogh</a>, under the <a class="hyperlink" href="https://github.com/GuyKeogh/wiki_verify/blob/master/LICENSE">2-Clause BSD</a> open-source license. Hosted on <a class="hyperlink" href="https://toolforge.org/">Wikimedia Toolforge</a>.
+			</nav>
+		</div>
+	</footer>
+	</div>
 </html>

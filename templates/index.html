@@ -1,19 +1,105 @@
+<!DOCTYPE html>
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<meta http-equiv="Content-Security-Policy" content="default-src 'self';"/>
-		<title>Evaluate article tool</title>
+		<link rel="stylesheet" href="{{ url_for('static',filename='bootstrap.css') }}">
+		<link rel="stylesheet" href="../static/bootstrap.css">
+		<meta name="description" content="Wikipedia article fact-checker and verifier">
+		<title>verify</title>
 	</head>
-
-	<body>
-		<form action="/article" method="POST" id="articleForm">
-		  <div>
-			<label for="name">Enter the article title:</label>
-			<input type="text" id="name" name="name">
-		  </div>
+	<div class="container pt-3">
+		<header>
+			<center>
+			<nav>
+				<a class="hyperlink p-2 text-dark" href="/">📝</a> |
+				<a class="hyperlink p-2 text-dark" href="https://en.wikipedia.org/wiki/User:Guy_Keogh/verify">Manual</a> |
+				<a class="hyperlink p-2 text-dark" href="https://github.com/GuyKeogh/wiki_verify">Source</a> |
+				<a class="hyperlink p-2 text-dark" href="https://en.wikipedia.org/wiki/User_talk:Guy_Keogh">Feedback</a>
+			</nav>
+			<center>
+		</header>
+		
+		<div class="body_container">
+			<center>
+			<div class="container p-3 my-3 bg-dark text-white jumbotron jumbotron-fluid">
+			<h1 class="display-4">verify.toolforge.org</h1>
+				<p class="lead">Analyse English-language Wikipedia articles for uncited and inaccurate information.</p>
+			</div>
+			</center>
+		
+		<body>
+			<script>
+				window.addEventListener('pageshow',function(event){reset()});
+				function reset(){
+					document.getElementById("ifDefaultSettings").checked = true;
+					document.getElementById("OptionsHidden").style.display = "none";
+					document.getElementById("submitBox").disabled = false;
+				}
+				function ToggleHidden(obj){
+					var hiddenOptions = document.getElementById("OptionsHidden");
+					if(document.getElementById("ifDefaultSettings").checked==true){
+						hiddenOptions.style.display = "none";
+					}else{
+						hiddenOptions.style.display = "block";
+					}
+				}
+			</script>
+			
+			<h2>Analyse:</h2>
+			<form class="inline-form" action="/article" method="POST" id="articleForm">
+				<div class="form-check form-switch">
+					<input class="form-check-input" onclick="ToggleHidden('ifDefaultSettings')" type="checkbox" value="ifDefaultSettings" id="ifDefaultSettings" checked="true">
+					<label class="form-check-label" for="ifDefaultSettings">Default settings</label>
+				</div>
+				<div id="OptionsHidden" style="display:none">
+					Detect, most accurate:<br>
+					<div class="form-check form-check-inline">
+					  <input class="form-check-input" type="checkbox" name="quote_check" value="quote_check" checked="true">
+					  <label class="form-check-label" for="quote_check">Quotes</label>
+					</div>
+					<div class="form-check form-check-inline">
+					  <input class="form-check-input" type="checkbox" name="CD_check" value="CD_check" checked="true">
+					  <label class="form-check-label" for="CD_check">Cardinal numbers</label>
+					</div>
+					<div class="form-check form-check-inline">
+					  <input class="form-check-input" type="checkbox" name="NNP_check" value="NNP_check" checked="true">
+					  <label class="form-check-label" for="NNP_check">Plural proper nouns</label>
+					</div>
+					<br>
+					Detect, less accurate:<br>
+					<div class="form-check form-check-inline">
+					  <input class="form-check-input" type="checkbox" name="NN_check" value="NN_check">
+					  <label class="form-check-label" for="NN_check">Singular proper nouns</label>
+					</div>
+					<div class="form-check form-check-inline">
+					  <input class="form-check-input" type="checkbox" name="JJ_check" value="JJ_check">
+					  <label class="form-check-label" for="JJ_check">Adjectives</label>
+					</div>
+					<br>
+				</div>
+				
+				<input maxlength="255" class="col-7" type="text" id="page" name="page" placeholder="Article title"> on 
+				<select name="lang" data-placeholder="language">
+					<option value="en" selected="selected">en</option>
+					<option value="simple">simple</option>
+				</select>.wikipedia.org
+				<br>
+			</form>
+			<button class="btn btn-primary" id="submitBox" onclick="this.disabled=true;document.getElementById('articleForm').submit();">Submit</button>
+			<br>
+			<font color="red">{{error_message}}</font>
+		</body>
+		</div>
+		
 		<br>
-		<button onclick="document.getElementById('articleForm').submit()">Submit</button>
-		</form>
-		<font color="red">{{error_message}}</font>
-	</body>
+		<footer class="footer">
+			<div class="container">
+				<center>
+				<nav>
+					By <a class="hyperlink" href="https://en.wikipedia.org/wiki/User:Guy_Keogh">Guy Keogh</a>, under the <a class="hyperlink" href="https://github.com/GuyKeogh/wiki_verify/blob/master/LICENSE">2-Clause BSD</a> open-source license. Hosted on <a class="hyperlink" href="https://toolforge.org/">Wikimedia Toolforge</a>.
+				</nav>
+				</center>
+			</div>
+		</footer>
+	</div>
 </html>
