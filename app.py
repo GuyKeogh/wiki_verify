@@ -8,6 +8,7 @@ from flask import Flask, request, render_template
 from os import urandom, cpu_count
 from source import main
 from source import filter_title
+from source import __metadata__
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = str(urandom(24));
@@ -77,7 +78,7 @@ def article():
         return render_template("index.html", error_message = "The article does not exist (title is case-sensitive), or another error occurred.")
 
 if __name__ == '__main__':
-    if_production = True
+    if_production = __metadata__.__if_production__ #Get if the program is in production from file /source/__metadata__.py
     if(if_production==True):
         print("Starting production server...")
         from waitress import serve

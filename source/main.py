@@ -76,13 +76,15 @@ def main(article_title,language="en",
         unique_terms_citations_CD = []
         citation_text= []
         citeindex = 0
+        
+        #Request header sent to citation server:
+        citation_refferer_header = citation_get.generate_header(language=language,article_title=article_title)
+        
         for URL in external_URLs:
             #text = programIO.load_file(str(citeindex))
-            text = citation_get.get_citation(URL)
+            text = citation_get.get_citation(URL,citation_refferer_header,if_ignore_URL_error)
             if(text != "404"):
-                try:
-                    #programIO.write_file(text,str(citeindex)) #Save citation text to file
-                    
+                try: #Do the processing, which is a good enough delay before making another request.
                     tokenized_citation = eval_citation(text)
                     #NN (Proper noun, singular)
                     if(if_detect_NN):
@@ -100,10 +102,11 @@ def main(article_title,language="en",
                     if(if_detect_CD):
                         citetext_CD = eval_citation_for_type(tokenized_citation, 'CD')
                         unique_terms_citations_CD = unique_terms_citations_CD + citetext_CD
-    
+                    #programIO.write_file(text,str(citeindex)) #Save citation text to file
                     citation_text.append(text)
                 except Exception as exc:
-                    print("Error with URL '",URL,"' with error ",exc)
+                    if(if_ignore_URL_error == False):
+                        print("Error with URL '",URL,"' with error ",exc)
             elif(if_ignore_URL_error == False):
                 text = input("Copy and paste text of above URL, or leave blank: ")
                 tokenized_citation = eval_citation(text)

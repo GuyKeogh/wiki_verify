@@ -8,9 +8,9 @@ from bs4 import BeautifulSoup
 import requests
 import re
 
-def get_URL_text(URL):
+def get_URL_text(URL,headers,if_ignore_URL_error=True):
     try:
-        res = requests.get(URL)
+        res = requests.get(URL, headers=headers, timeout=5, allow_redirects=True)
         try:
             res.raise_for_status() #Fails if error occurs, which is caught as an exception
             
@@ -21,10 +21,12 @@ def get_URL_text(URL):
             plain_text = remove_junk(text)
             return plain_text
         except Exception as exc:
-            print('There was a problem: %s' % (exc))
+            if(if_ignore_URL_error==False):
+                print('There was a problem: %s' % (exc))
             return "404"
     except Exception as exc:
-        print('There was a problem requesting the URL: %s' % (exc))
+        if(if_ignore_URL_error==False):
+            print('There was a problem requesting the URL: %s' % (exc))
 
 def remove_junk(text):
     output = ''
