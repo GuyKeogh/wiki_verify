@@ -5,7 +5,7 @@ __license__ = "BSD 2-Clause"
 """
 
 from flask import Flask, request, render_template
-from os import urandom
+from os import urandom, cpu_count
 from source import main
 from source import filter_title
 
@@ -15,6 +15,10 @@ app.config["SECRET_KEY"] = str(urandom(24));
 @app.route('/')
 def index():
 	return render_template("index.html")
+
+@app.route('/robots.txt')
+def robots():
+	return render_template("robots.txt")
 
 @app.route('/article', methods = ["POST"])
 def article():
@@ -77,7 +81,7 @@ if __name__ == '__main__':
     if(if_production==True):
         print("Starting production server...")
         from waitress import serve
-        serve(app, host="localhost", port=8080, url_scheme="https")
+        serve(app, host="localhost", port=8080, url_scheme="https",threads=cpu_count())
     else:
         print("Starting debug server...")
         app.run(debug = True, port=8080)

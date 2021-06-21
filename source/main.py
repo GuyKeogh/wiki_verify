@@ -129,41 +129,41 @@ def main(article_title,language="en",
             text_CD = text_tagging.tag_text_of_type("CD",data)
             data = tag_comparisons("CD",text_CD,unique_terms_citations_CD,data)
     
-    #Compare quotes
-    if(if_detect_quote):
-        for quote in text_quotes:
-            ifTrue = False
-            for citation in citation_text:
-                if(ifTrue == False): #Just needs to be in one citation
-                    ifTrue = check_quote_in_text(quote,citation)
-            
-            quote_in_data_startword = 0
-            index = 0
-            if_in_quote = False
-            quote_list = word_tokenize(quote) #List of each word in quote
-            
-            #Find quote in data
-            for word in data:
-                if(if_in_quote==False):
-                    if(word[0]==quote_list[0]):
-                        if_in_quote = True
-                        quote_in_data_startword = index
-                else: #If we seem to be in a quote, check it's still true
-                    if(len(quote_list)==index-quote_in_data_startword): #Successfully detected a quote
-                        for k in range(quote_in_data_startword,index,1):
-                            if ifTrue == False:
-                                data[k][1] = 'quote'
-                                data[k][2] = 'fail'
-                            else:
-                                data[k][1] = 'quote'
-                                data[k][2] = 'pass'
-                        
-                        if_in_quote = False
-                        quote_in_data_startword = 0
-                    elif(word[0]!=quote_list[index-quote_in_data_startword]):
-                        if_in_quote = False
-                        quote_in_data_startword = 0
-                index+=1
+        #Compare quotes
+        if(if_detect_quote):
+            for quote in text_quotes:
+                ifTrue = False
+                for citation in citation_text:
+                    if(ifTrue == False): #Just needs to be in one citation
+                        ifTrue = check_quote_in_text(quote,citation)
+                
+                quote_in_data_startword = 0
+                index = 0
+                if_in_quote = False
+                quote_list = word_tokenize(quote) #List of each word in quote
+                
+                #Find quote in data
+                for word in data:
+                    if(if_in_quote==False):
+                        if(word[0]==quote_list[0]):
+                            if_in_quote = True
+                            quote_in_data_startword = index
+                    else: #If we seem to be in a quote, check it's still true
+                        if(len(quote_list)==index-quote_in_data_startword): #Successfully detected a quote
+                            for k in range(quote_in_data_startword,index,1):
+                                if ifTrue == False:
+                                    data[k][1] = 'quote'
+                                    data[k][2] = 'fail'
+                                else:
+                                    data[k][1] = 'quote'
+                                    data[k][2] = 'pass'
+                            
+                            if_in_quote = False
+                            quote_in_data_startword = 0
+                        elif(word[0]!=quote_list[index-quote_in_data_startword]):
+                            if_in_quote = False
+                            quote_in_data_startword = 0
+                    index+=1
 
     #Write html output as string:
     html_output = programIO.parse_HTML(data)

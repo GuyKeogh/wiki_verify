@@ -14,6 +14,7 @@ Additionally, quotes (any text enclosed by single or double quotes) are checked 
 
 When in the directory the files have been saved:
 * Run 'pip3 install -r requirements.txt'
+* Run 'python', 'import nltk' and enter both 'nltk.download('punkt')' and 'nltk.download('averaged_perceptron_tagger')'
 * Run 'python app.py' to use the locally hosted web app, or 'python standalone.py' for the Python application
 * (WEB APP) Go to 'http://localhost:8080' in a browser on the same computer
 * Enter a valid Wikipedia article name and submit
@@ -30,7 +31,7 @@ Text that needs to be checked is marked in red, while text that appears to be fi
 
 As this is currently a proof-of-concept tool:
 * It makes direct comparisons. If a word is spelled differently between the texts or a quotation has a clarification inside it that's not present in the source text, then it will be flagged as needing to be checked.
-* It doesn't have rate limiting or multithreading.
+* It doesn't have rate limiting.
 * This currently only automatically extracts the text in raw HTML, and does not handle PDFs, redirects, server-side refusals to deliver text, etc. If an issue is detected, currently only the **standalone** program will ask you to copy-and-paste this text which will otherwise be ignored.
 
 ## requirements.txt
