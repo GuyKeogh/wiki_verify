@@ -13,16 +13,34 @@ from source import __metadata__
 app = Flask(__name__)
 app.config["SECRET_KEY"] = str(urandom(24));
 
+#Basic anonymised analytics, to get information about improvements and server resources that are needed:
+from datetime import datetime
+analytics_retention_hours = 24*7 #Hours
+analytics_submits = [0]*analytics_retention_hours #How many article submits have been made
+analytics_successes = [0]*analytics_retention_hours #From submitted articles, how many were successful
+analytics_last_hour_written = 0
+analytics_initialise_time = datetime.now() #The time and date the program was started
+
+def analytics_overwrite(hour): #On a new hour, so set what is being written over to zero
+    analytics_submits[hour] = 0
+    analytics_successes[hour] = 0
+    global analytics_last_hour_written
+    analytics_last_hour_written = hour
+
+def analytics_hours_since_init():
+    #Get time difference, convert to hours, round down, and if over 168 (a week) start overwriting
+    hour = int((((datetime.now()-analytics_initialise_time).total_seconds())/3600)//1)%analytics_retention_hours
+    if(hour != analytics_last_hour_written):
+        analytics_overwrite(hour)
+    return hour
+
 @app.route('/')
 def index():
 	return render_template("index.html")
 
-@app.route('/robots.txt')
-def robots():
-	return render_template("robots.txt")
-
 @app.route('/article', methods = ["POST"])
 def article():
+    analytics_submits[analytics_hours_since_init()] += 1
     POST_if_quote = False
     POST_if_CD = False
     POST_if_NNP = False
@@ -73,9 +91,23 @@ def article():
     
     #Using backend output, render HTML:
     if(html_output!="500"):
+        analytics_successes[analytics_hours_since_init()] += 1
         return render_template("article.html", text = html_output, page = filtered_name, language = POST_language)
     else: #Generic error
         return render_template("index.html", error_message = "The article does not exist (title is case-sensitive), or another error occurred.")
+
+@app.route('/robots.txt')
+def robots():
+	return render_template("robots.txt")
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template("dashboard.html",
+                           retention_hours = analytics_retention_hours,
+                           request_time = datetime.now(),
+                           submits = analytics_submits,
+                           successes = analytics_successes
+                           )
 
 if __name__ == '__main__':
     if_production = __metadata__.__if_production__ #Get if the program is in production from file /source/__metadata__.py
