@@ -15,17 +15,32 @@ app.config["SECRET_KEY"] = str(urandom(24));
 
 #Basic anonymised analytics, to get information about improvements and server resources that are needed:
 from datetime import datetime
-analytics_retention_hours = 24*7 #Hours
+analytics_retention_hours = 24*7
 analytics_submits = [0]*analytics_retention_hours #How many article submits have been made
 analytics_successes = [0]*analytics_retention_hours #From submitted articles, how many were successful
 analytics_last_hour_written = 0
-analytics_initialise_time = datetime.now() #The time and date the program was started
+analytics_initialise_time = datetime.now().replace(minute=0,second=0,microsecond=0) #The hour and date the program was started
 
 def analytics_overwrite(hour): #On a new hour, so set what is being written over to zero
-    analytics_submits[hour] = 0
-    analytics_successes[hour] = 0
+    #Note: isn't accurate if last write was longer than the retention_hours
+    overwrite_range = []
+    
     global analytics_last_hour_written
+    if(hour>analytics_last_hour_written):
+        for x in range(analytics_last_hour_written,hour):
+            overwrite_range.append(x)
+    else: #Wraparound of list values
+        for x in range(analytics_last_hour_written,analytics_retention_hours):
+            overwrite_range.append(x)
+        for x in range(0,hour):
+            overwrite_range.append(x)
+    
     analytics_last_hour_written = hour
+    #Do the overwriting:
+    for elem in overwrite_range:
+        index = (elem+1)%analytics_retention_hours #Ensure list wraparound to prevent out of bounds
+        analytics_submits[index] = 0
+        analytics_successes[index] = 0
 
 def analytics_hours_since_init():
     #Get time difference, convert to hours, round down, and if over 168 (a week) start overwriting
@@ -106,7 +121,7 @@ def dashboard():
                            retention_hours = analytics_retention_hours,
                            request_time = datetime.now(),
                            submits = analytics_submits,
-                           successes = analytics_successes
+                           successes = analytics_successes,
                            )
 
 if __name__ == '__main__':
