@@ -4,7 +4,7 @@ __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, send_file
 from os import urandom, cpu_count
 from source import main
 from source import filter_title
@@ -15,7 +15,7 @@ app.config["SECRET_KEY"] = str(urandom(24));
 
 #Basic anonymised analytics, to get information about improvements and server resources that are needed:
 from datetime import datetime
-analytics_retention_hours = 24*7
+analytics_retention_hours = 168 #168hrs = one week
 analytics_submits = [0]*analytics_retention_hours #How many article submits have been made
 analytics_successes = [0]*analytics_retention_hours #From submitted articles, how many were successful
 analytics_last_hour_written = 0
@@ -113,7 +113,7 @@ def article():
 
 @app.route('/robots.txt')
 def robots():
-	return render_template("robots.txt")
+    return send_file("templates/robots.txt")
 
 @app.route('/dashboard')
 def dashboard():

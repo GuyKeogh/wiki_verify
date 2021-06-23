@@ -64,16 +64,20 @@ def parse_HTML(data):
     combined = ""
     for word in data:
         article_word = encode_text(word[0])
-        if(word[0] == "_BREAK2_"):
-            combined = combined + "<br><br><strong>"
-        elif(word[0] == "_BREAK1_"):
-            combined = combined + "</strong><br>"
-        elif(word[2] == 'fail'):
-            combined = combined + ''' <span title="'''+word[1]+'''" style="background-color: #ff0000">''' + article_word + "</span>"
-        elif(word[2] == 'pass'):
-            combined = combined + ''' <span title="'''+word[1]+'''" style="background-color: #00ff00">''' + article_word + "</span>"
-        else:
-            combined = combined + " " + article_word
+        if(word[1]!="," and word[1]!= "'" and word[1]!= "." and word[0]!= "'s" #Punctuation that doesn't need space before it
+           and word[1]!="``" and word[1]!="''" and word[1]!='"'): #Quotation marks
+            if(word[0] == "_BREAK2_"):
+                combined = combined + "<br><br><strong>"
+            elif(word[0] == "_BREAK1_"):
+                combined = combined + "</strong><br>"
+            elif(word[2] == 'fail'):
+                combined = combined + ''' <span title="'''+word[1]+'''" style="background-color: #ff0000">''' + article_word + "</span>"
+            elif(word[2] == 'pass'):
+                combined = combined + ''' <span title="'''+word[1]+'''" style="background-color: #00ff00">''' + article_word + "</span>"
+            else:
+                combined = combined + " " + article_word
+        else: #Punctuation, so no space.
+            combined = combined + article_word
     return combined
 
 def encode_text(text):
