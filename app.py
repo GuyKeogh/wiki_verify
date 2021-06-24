@@ -9,6 +9,7 @@ from os import urandom, cpu_count
 from source import main
 from source import filter_title
 from source import __metadata__
+from source import correction
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = str(urandom(24));
@@ -20,6 +21,10 @@ analytics_submits = [0]*analytics_retention_hours #How many article submits have
 analytics_successes = [0]*analytics_retention_hours #From submitted articles, how many were successful
 analytics_last_hour_written = 0
 analytics_initialise_time = datetime.now().replace(minute=0,second=0,microsecond=0) #The hour and date the program was started
+
+#Other:
+correction_retention_time = 30 #Minutes
+sessions = []
 
 def analytics_overwrite(hour): #On a new hour, so set what is being written over to zero
     #Note: isn't accurate if last write was longer than the retention_hours
@@ -49,13 +54,55 @@ def analytics_hours_since_init():
         analytics_overwrite(hour)
     return hour
 
+def check_session_expiration():
+    #As they are added consecutively and this is checked regularly, only the first (the oldest) needs to be checked
+    if not sessions:
+        return #List of sessions is empty
+    else:
+        (session_ID,article_title,data,text_quotes,settings,session_creation_date) = sessions[0]
+        minutes_since_creation = (datetime.now() - session_creation_date).total_seconds() / 60.0
+        if(minutes_since_creation > correction_retention_time):
+            sessions.pop(0)
+            print("Session "+session_ID+" has expired.")
+            check_session_expiration() #Keep looping until all expired sessions are deleted
+
 @app.route('/')
 def index():
 	return render_template("index.html")
 
+@app.route('/correct', methods = ["POST"])
+def correct():
+    POST_session = request.form["session_ID"]
+    if_session_exists = False
+    session_index = 0
+    for session in sessions:
+        if(session[0]==POST_session):
+            if_session_exists = True
+            break
+        session_index+=1
+    if(if_session_exists==False):
+        error_message = "The session has expired (over "+str(correction_retention_time)+" minutes since request)."
+        return render_template("index.html", error_message = error_message)
+    else:
+        input_text = request.form["correction_text"]
+        (session_ID,article_title,data,text_quotes,settings,session_creation_date) = sessions[session_index]
+        (language,if_detect_quote,if_detect_NNP,if_detect_JJ,if_detect_NN,if_detect_CD) = settings
+        
+        #Feed back to a more streamlined function for the absolute final output:
+        html_output = correction.correction(article_title,data,input_text,text_quotes,language="en",
+             if_ignore_URL_error = True,
+             if_detect_quote = if_detect_quote, if_detect_NNP = if_detect_NNP, if_detect_JJ = if_detect_JJ,
+             if_detect_NN = if_detect_NN, if_detect_CD = if_detect_CD
+             )
+        return render_template("article.html", text = html_output, page = article_title, language = language)
+
 @app.route('/article', methods = ["POST"])
 def article():
+    #Maintenance:
     analytics_submits[analytics_hours_since_init()] += 1
+    check_session_expiration()
+    
+    #Getting from article:
     POST_if_quote = False
     POST_if_CD = False
     POST_if_NNP = False
@@ -100,9 +147,17 @@ def article():
     
     #Finished checks
     #Submit to backend:
-    html_output = main.main(article_title = filtered_name, language=POST_language, if_ignore_URL_error=True,
+    output = main.main(article_title = filtered_name, language=POST_language, if_ignore_URL_error=True,
                             if_detect_quote=POST_if_quote,if_detect_CD=POST_if_CD,if_detect_NNP=POST_if_NNP,
                             if_detect_NN=POST_if_NN,if_detect_JJ=POST_if_JJ)
+    (html_output,external_URLs_failed,data,text_quotes) = output
+    fail_count = len(external_URLs_failed)
+    
+    if(fail_count>0): #Create session
+        settings = (POST_language,POST_if_quote,POST_if_NNP,POST_if_JJ,POST_if_NN,POST_if_CD)
+        session = (str(urandom(24)),filtered_name,data,text_quotes,settings,datetime.now())
+        sessions.append(session)
+        return render_template("article_errors.html", text = html_output, page = filtered_name, language = POST_language, session_ID = session[0], error_count = fail_count, URLs_failed = external_URLs_failed)
     
     #Using backend output, render HTML:
     if(html_output!="500"):
@@ -122,6 +177,8 @@ def dashboard():
                            request_time = datetime.now(),
                            submits = analytics_submits,
                            successes = analytics_successes,
+                           session_count = len(sessions),
+                           session_retention = correction_retention_time
                            )
 
 if __name__ == '__main__':

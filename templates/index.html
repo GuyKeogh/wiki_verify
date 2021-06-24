@@ -35,7 +35,7 @@
 					document.getElementById("OptionsHidden").style.display = "none";
 					document.getElementById("submitBox").disabled = false;
 				}
-				function ToggleHidden(obj){
+				function ToggleHidden(){
 					var hiddenOptions = document.getElementById("OptionsHidden");
 					if(document.getElementById("ifDefaultSettings").checked==true){
 						hiddenOptions.style.display = "none";
@@ -48,7 +48,7 @@
 			<h2>Analyse:</h2>
 			<form class="inline-form" action="/article" method="POST" id="articleForm">
 				<div class="form-check form-switch">
-					<input class="form-check-input" onclick="ToggleHidden('ifDefaultSettings')" type="checkbox" value="ifDefaultSettings" id="ifDefaultSettings" checked="true">
+					<input class="form-check-input" onclick="ToggleHidden()" type="checkbox" value="ifDefaultSettings" id="ifDefaultSettings" checked="true">
 					<label class="form-check-label" for="ifDefaultSettings">Default settings</label>
 				</div>
 				<div id="OptionsHidden" style="display:none">

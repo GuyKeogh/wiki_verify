@@ -15,8 +15,8 @@ def main_standalone():
         article_title = input("Enter the article title: ")
         
         if(if_title_valid(article_title)==True):
-            html_output = main.main(filter_title.filter_title(article_title),if_ignore_URL_error=False)
-            
+            output = main.main(filter_title.filter_title(article_title),if_ignore_URL_error=False)
+            (html_output,external_URLs_failed,data,text_quotes) = output
             #Process backend output:
             if(html_output!="500"):
                 programIO.write_file(html_output,"article.html")

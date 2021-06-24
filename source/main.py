@@ -67,6 +67,7 @@ def main(article_title,language="en",
         if_evaluate_citations=False #If we're not doing anything with the citations, don't download or process them
     
     #Handle citations:
+    external_URLs_failed = []
     if(if_evaluate_citations):
         external_URLs = programIO.download_external_URLs(article_title)
         
@@ -105,6 +106,7 @@ def main(article_title,language="en",
                     #programIO.write_file(text,str(citeindex)) #Save citation text to file
                     citation_text.append(text)
                 except Exception as exc:
+                    external_URLs_failed.append(URL)
                     if(if_ignore_URL_error == False):
                         print("Error with URL '",URL,"' with error ",exc)
             elif(if_ignore_URL_error == False):
@@ -112,6 +114,8 @@ def main(article_title,language="en",
                 tokenized_citation = eval_citation(text)
                 citetext_NNP = eval_citation_for_type(tokenized_citation, 'NNP')
                 unique_terms_citations_NNP = unique_terms_citations_NNP + citetext_NNP
+            else:
+                external_URLs_failed.append(URL)
             citeindex+=1
         
         #Compare unique citation terms of specific type and article text of the same type
@@ -170,4 +174,5 @@ def main(article_title,language="en",
 
     #Write html output as string:
     html_output = programIO.parse_HTML(data)
-    return html_output
+    output = (html_output,external_URLs_failed,data,text_quotes)
+    return output
