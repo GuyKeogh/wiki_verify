@@ -5,9 +5,7 @@ __license__ = "BSD 2-Clause"
 """
 
 import webbrowser
-from source import programIO
-from source import main
-from source import filter_title
+from source import programIO, main, filter_title
 
 def main_standalone():
     if_continue = True

@@ -32,3 +32,31 @@ def tag_text_quotes(text):
     #Detects all info in single or double quotes, and outputs all these as strings in a list
     matches=re.findall(r'\"(.+?)\"',text)
     return matches
+def eval_citation(citation_text):
+    sentences = nltk.sent_tokenize(citation_text) #Organize into individual sentences
+    data = []
+    for sent in sentences:
+        data = data + nltk.pos_tag(nltk.word_tokenize(sent))
+    return set(data)
+
+def eval_citation_for_type(citation_text, key):
+    #Only output words of specific type stated in key
+    unique_terms_cite = []
+    for word in citation_text:
+        if key in word[1]: 
+            unique_terms_cite.append(word[0])
+    return unique_terms_cite
+
+def check_quote_in_text(quote_string,citation_text):
+    if(citation_text.find(quote_string) != -1):
+        return True
+    else:
+        return False
+def tag_comparisons(term,text_of_tag,unique_terms_citations_of_tag,data):
+    for elem in text_of_tag:
+        if(data[elem[1]][2] != 'pass'):
+            if elem[0] not in unique_terms_citations_of_tag:
+                data[elem[1]][2] = 'fail'
+            else:
+                data[elem[1]][2] = 'pass'
+    return data
