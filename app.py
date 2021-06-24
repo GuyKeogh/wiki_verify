@@ -116,7 +116,7 @@ def robots():
 @app.route('/dashboard')
 def dashboard():
     return render_template("dashboard.html",
-                           retention_hours = analytics.analytics_retention_hours,
+                           retention_hours = analytics.ANALYTICS_RETENTION_HOURS,
                            request_time = datetime.now(),
                            submits = analytics.analytics_submits,
                            successes = analytics.analytics_successes,
