@@ -6,6 +6,7 @@ __license__ = "BSD 2-Clause"
 
 import re
 import nltk
+from nltk import word_tokenize
 
 def tag_data(text):
     #Extract info
@@ -61,3 +62,104 @@ def tag_comparisons(text_of_tag, unique_terms_citations_of_tag, data):
             else:
                 data[elem[1]][2] = 'pass'
     return data
+def get_citation_unique_terms(text,
+                              if_detect_NNP = False,
+                              if_detect_JJ = False, 
+                              if_detect_NN = False,
+                              if_detect_CD = False):
+    unique_terms_citations_NNP = []
+    unique_terms_citations_NN = []
+    unique_terms_citations_JJ = []
+    unique_terms_citations_CD = []
+    tokenized_citation = eval_citation(text)
+    if if_detect_NN: #NN (Proper noun, singular)
+        citetext_NN = eval_citation_for_type(tokenized_citation, 'NN')
+        unique_terms_citations_NN = unique_terms_citations_NN + citetext_NN
+    if if_detect_NNP: #NNP (Proper noun, plural)
+        citetext_NNP = eval_citation_for_type(tokenized_citation, 'NNP')
+        unique_terms_citations_NNP = unique_terms_citations_NNP + citetext_NNP
+    if if_detect_JJ: #JJ (Adjective)
+        citetext_JJ = eval_citation_for_type(tokenized_citation, 'JJ')
+        unique_terms_citations_JJ = unique_terms_citations_JJ + citetext_JJ
+    if if_detect_CD: #CD (Cardinal number)
+        citetext_CD = eval_citation_for_type(tokenized_citation, 'CD')
+        unique_terms_citations_CD = unique_terms_citations_CD + citetext_CD
+    return (unique_terms_citations_CD,
+            unique_terms_citations_JJ,
+            unique_terms_citations_NN,
+            unique_terms_citations_NNP)
+
+def compare_citation_and_text_terms(data,
+                                    unique_terms_citations_CD,
+                                    unique_terms_citations_JJ,
+                                    unique_terms_citations_NN,
+                                    unique_terms_citations_NNP,
+                                    if_detect_NNP = False,
+                                    if_detect_JJ = False, 
+                                    if_detect_NN = False,
+                                    if_detect_CD = False):
+    """Compare unique citation terms of specific type and article text of the same type"""
+    text_JJ = []
+    text_NN = []
+    text_NNP = []
+    text_CD = []
+    if if_detect_JJ:
+        text_JJ = tag_text_of_type("JJ", data)
+        data = tag_comparisons(text_JJ, unique_terms_citations_JJ, data)
+    if if_detect_NNP:
+        text_NNP = tag_text_of_type("NNP", data)
+        data = tag_comparisons(text_NNP, unique_terms_citations_NNP, data)
+    if if_detect_NN:
+        text_NN = tag_text_of_type("NN", data)
+        data = tag_comparisons(text_NN, unique_terms_citations_NN, data)
+    if if_detect_CD:
+        text_CD = tag_text_of_type("CD", data)
+        data = tag_comparisons(text_CD, unique_terms_citations_CD, data)
+    return data
+
+def mark_present_quotes(data,quote,if_quote_in_citation):
+    """With a citation and a text, marks if it's in that text"""
+    quote_in_data_startword = 0
+    index = 0
+    if_in_quote = False
+    quote_list = word_tokenize(quote) #List of each word in quote
+    #Find quote in data
+    for word in data:
+        if not if_in_quote:
+            if word[0]==quote_list[0]:
+                if_in_quote = True
+                quote_in_data_startword = index
+        else: #If we seem to be in a quote, check it's still true
+            if len(quote_list)==(index-quote_in_data_startword): #Detected a quote
+                for k in range(quote_in_data_startword, index, 1):
+                    if if_quote_in_citation == False:
+                        data[k][1] = 'quote'
+                        data[k][2] = 'fail'
+                    else:
+                        data[k][1] = 'quote'
+                        data[k][2] = 'pass'
+
+                if_in_quote = False
+                quote_in_data_startword = 0
+            elif word[0]!=quote_list[index-quote_in_data_startword]:
+                if_in_quote = False
+                quote_in_data_startword = 0
+        index+=1
+    return data
+def detect_quotes_in_string(data, input_text, text_quotes):
+    """With every quote and the sole text (used in correction), mark citations present"""
+    for quote in text_quotes:
+        if_quote_in_citation = check_quote_in_text(quote, input_text)
+        data = mark_present_quotes(data,quote,if_quote_in_citation)
+    return data
+def detect_quotes_in_multiple_texts(data, citation_text, text_quotes):
+    """With every quote and all texts, mark all citations that are present"""
+    for quote in text_quotes:
+        if_quote_in_citation = False
+        for citation in citation_text:
+            if if_quote_in_citation == False: #Just needs to be in one citation
+                if_quote_in_citation = check_quote_in_text(quote, citation)
+
+        data = mark_present_quotes(data,quote,if_quote_in_citation)
+    return data
+

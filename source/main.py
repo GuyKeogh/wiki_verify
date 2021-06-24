@@ -1,9 +1,15 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jun 24 19:59:07 2021
+
+@author: guyke
+"""
+
 """
 __description__ = "Backend of verification tool"
 __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
-from nltk import word_tokenize
 from source import article_standardise, programIO, text_tagging, citation_scraper
 
 def main(article_title,language="en",
@@ -54,24 +60,20 @@ def main(article_title,language="en",
             text = citation_scraper.get_URL_text(URL,citation_refferer_header,if_ignore_URL_error)
             if text != "404":
                 try: #Do the processing, which is a good enough delay before making another request.
-                    tokenized_citation = text_tagging.eval_citation(text)
-                    #NN (Proper noun, singular)
-                    if if_detect_NN:
-                        citetext_NN = text_tagging.eval_citation_for_type(tokenized_citation, 'NN')
-                        unique_terms_citations_NN = unique_terms_citations_NN + citetext_NN
-                    #NNP (Proper noun, plural)
-                    if if_detect_NNP:
-                        citetext_NNP = text_tagging.eval_citation_for_type(tokenized_citation, 'NNP')
-                        unique_terms_citations_NNP = unique_terms_citations_NNP + citetext_NNP
-                    #JJ (Adjective)
-                    if if_detect_JJ:
-                        citetext_JJ = text_tagging.eval_citation_for_type(tokenized_citation, 'JJ')
-                        unique_terms_citations_JJ = unique_terms_citations_JJ + citetext_JJ
-                    #CD (Cardinal number)
-                    if if_detect_CD:
-                        citetext_CD = text_tagging.eval_citation_for_type(tokenized_citation, 'CD')
-                        unique_terms_citations_CD = unique_terms_citations_CD + citetext_CD
-                    #programIO.write_file(text,str(citeindex)) #Save citation text to file
+                    (terms_citations_CD_to_append,
+                     terms_citations_JJ_to_append,
+                     terms_citations_NN_to_append,
+                     terms_citations_NNP_to_append) = text_tagging.get_citation_unique_terms(text,
+                                                                 if_detect_NNP=if_detect_NNP,
+                                                                 if_detect_JJ=if_detect_JJ,
+                                                                 if_detect_NN=if_detect_NN,
+                                                                 if_detect_CD=if_detect_CD)
+                    #Add previous results to the total:
+                    unique_terms_citations_NN = unique_terms_citations_NN + terms_citations_NN_to_append
+                    unique_terms_citations_NNP = unique_terms_citations_NNP + terms_citations_NNP_to_append
+                    unique_terms_citations_JJ = unique_terms_citations_JJ + terms_citations_JJ_to_append
+                    unique_terms_citations_CD = unique_terms_citations_CD + terms_citations_CD_to_append
+                    
                     citation_text.append(text)
                 except Exception as exc:
                     external_URLs_failed.append(URL)
@@ -86,59 +88,19 @@ def main(article_title,language="en",
                 external_URLs_failed.append(URL)
             citeindex+=1
 
-        #Compare unique citation terms of specific type and article text of the same type
-        text_JJ = []
-        text_NN = []
-        text_NNP = []
-        text_CD = []
-        if if_detect_JJ:
-            text_JJ = text_tagging.tag_text_of_type("JJ",data)
-            data = text_tagging.tag_comparisons(text_JJ, unique_terms_citations_JJ, data)
-        if if_detect_NNP:
-            text_NNP = text_tagging.tag_text_of_type("NNP",data)
-            data = text_tagging.tag_comparisons(text_NNP, unique_terms_citations_NNP, data)
-        if if_detect_NN:
-            text_NN = text_tagging.tag_text_of_type("NN",data)
-            data = text_tagging.tag_comparisons(text_NN, unique_terms_citations_NN, data)
-        if if_detect_CD:
-            text_CD = text_tagging.tag_text_of_type("CD",data)
-            data = text_tagging.tag_comparisons(text_CD, unique_terms_citations_CD, data)
+        data = text_tagging.compare_citation_and_text_terms(data,
+                                               unique_terms_citations_CD,
+                                               unique_terms_citations_JJ,
+                                               unique_terms_citations_NN,
+                                               unique_terms_citations_NNP,
+                                               if_detect_NNP=if_detect_NNP,
+                                               if_detect_JJ=if_detect_JJ,
+                                               if_detect_NN=if_detect_NN,
+                                               if_detect_CD=if_detect_CD)
 
         #Compare quotes
         if if_detect_quote:
-            for quote in text_quotes:
-                if_quote_in_citation = False
-                for citation in citation_text:
-                    if if_quote_in_citation == False: #Just needs to be in one citation
-                        if_quote_in_citation = text_tagging.check_quote_in_text(quote, citation)
-
-                quote_in_data_startword = 0
-                index = 0
-                if_in_quote = False
-                quote_list = word_tokenize(quote) #List of each word in quote
-                
-                #Find quote in data
-                for word in data:
-                    if not if_in_quote:
-                        if word[0]==quote_list[0]:
-                            if_in_quote = True
-                            quote_in_data_startword = index
-                    else: #If we seem to be in a quote, check it's still true
-                        if len(quote_list)==index-quote_in_data_startword: #Detected a quote
-                            for k in range(quote_in_data_startword, index, 1):
-                                if not if_quote_in_citation:
-                                    data[k][1] = 'quote'
-                                    data[k][2] = 'fail'
-                                else:
-                                    data[k][1] = 'quote'
-                                    data[k][2] = 'pass'
-
-                            if_in_quote = False
-                            quote_in_data_startword = 0
-                        elif word[0]!=quote_list[index-quote_in_data_startword]:
-                            if_in_quote = False
-                            quote_in_data_startword = 0
-                    index+=1
+            data = text_tagging.detect_quotes_in_multiple_texts(data, citation_text, text_quotes)
 
     #Write html output as string:
     html_output = programIO.parse_HTML(data)

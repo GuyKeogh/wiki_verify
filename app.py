@@ -43,13 +43,12 @@ def correct():
                                             input_text,
                                             text_quotes,
                                             language="en",
-                                            if_ignore_URL_error=True,
                                             if_detect_quote=if_detect_quote,
                                             if_detect_NNP=if_detect_NNP,
                                             if_detect_JJ=if_detect_JJ,
                                             if_detect_NN=if_detect_NN,
-                                            if_detect_CD=if_detect_CD
-             )
+                                            if_detect_CD=if_detect_CD)
+
         return render_template("article.html",
                                text=html_output,
                                page=article_title,
@@ -161,6 +160,7 @@ def robots():
 @app.route('/dashboard')
 def dashboard():
     """Info about how the program is used to help with optimisation"""
+    session.check_session_expiration()
     return render_template("dashboard.html",
                            retention_hours=analytics.ANALYTICS_RETENTION_HOURS,
                            request_time=datetime.now(),
