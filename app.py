@@ -22,7 +22,7 @@ def correct():
     if_session_exists = False
     session_index = 0
     for elem in session.sessions:
-        if(elem[0]==POST_session):
+        if elem[0]==POST_session:
             if_session_exists = True
             break
         session_index+=1
@@ -58,7 +58,7 @@ def article():
     
     #Settings checkboxes. These are only delivered by POST if they are checked, so assume they are False unless delivered:
     if(request.form.get("ifDefaultSettings")):
-        POST_if_quote, POST_if_CD, POST_if_NNP = True
+        POST_if_quote = POST_if_CD = POST_if_NNP = True
     else:
         if(request.form.get("quote_check")):
             POST_if_quote = True
@@ -100,7 +100,13 @@ def article():
         settings = (POST_language,POST_if_quote,POST_if_NNP,POST_if_JJ,POST_if_NN,POST_if_CD)
         session_elem = (str(urandom(24)),filtered_name,data,text_quotes,settings,datetime.now())
         session.sessions.append(session_elem)
-        return render_template("article_errors.html", text = html_output, page = filtered_name, language = POST_language, session_ID = session_elem[0], error_count = fail_count, URLs_failed = external_URLs_failed)
+        return render_template("article_errors.html",
+                               text=html_output,
+                               page=filtered_name,
+                               language=POST_language,
+                               session_ID=session_elem[0],
+                               error_count=fail_count,
+                               URLs_failed=external_URLs_failed)
     
     #Using backend output, render HTML:
     if(html_output!="500"):
@@ -116,15 +122,15 @@ def robots():
 @app.route('/dashboard')
 def dashboard():
     return render_template("dashboard.html",
-                           retention_hours = analytics.ANALYTICS_RETENTION_HOURS,
-                           request_time = datetime.now(),
-                           submits = analytics.analytics_submits,
-                           successes = analytics.analytics_successes,
-                           session_count = len(session.sessions),
-                           session_retention = __metadata__.correction_retention_time,
-                           total_sessions = analytics.analytics_total_sessions,
-                           unused_sessions = analytics.analytics_unused_sessions,
-                           total_used_session_time = analytics.analytics_total_used_session_time
+                           retention_hours=analytics.ANALYTICS_RETENTION_HOURS,
+                           request_time=datetime.now(),
+                           submits=analytics.analytics_submits,
+                           successes=analytics.analytics_successes,
+                           session_count=len(session.sessions),
+                           session_retention=__metadata__.correction_retention_time,
+                           total_sessions=analytics.analytics_total_sessions,
+                           unused_sessions=analytics.analytics_unused_sessions,
+                           total_used_session_time=analytics.analytics_total_used_session_time
                            )
 
 if __name__ == '__main__':

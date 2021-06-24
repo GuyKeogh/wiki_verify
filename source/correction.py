@@ -46,16 +46,16 @@ def correction(article_title,data,text,text_quotes,language="en",
         text_CD = []
         if(if_detect_JJ):
             text_JJ = text_tagging.tag_text_of_type("JJ",data)
-            data = text_tagging.tag_comparisons("JJ",text_JJ,unique_terms_citations_JJ,data)
+            data = text_tagging.tag_comparisons("JJ", text_JJ, unique_terms_citations_JJ, data)
         if(if_detect_NNP):
             text_NNP = text_tagging.tag_text_of_type("NNP",data)
-            data = text_tagging.tag_comparisons("NNP",text_NNP,unique_terms_citations_NNP,data)
+            data = text_tagging.tag_comparisons("NNP", text_NNP, unique_terms_citations_NNP, data)
         if(if_detect_NN):
             text_NN = text_tagging.tag_text_of_type("NN",data)
-            data = text_tagging.tag_comparisons("NN",text_NN,unique_terms_citations_NN,data)
+            data = text_tagging.tag_comparisons("NN", text_NN, unique_terms_citations_NN, data)
         if(if_detect_CD):
             text_CD = text_tagging.tag_text_of_type("CD",data)
-            data = text_tagging.tag_comparisons("CD",text_CD,unique_terms_citations_CD,data)
+            data = text_tagging.tag_comparisons("CD", text_CD, unique_terms_citations_CD, data)
     
         #Compare quotes
         if(if_detect_quote):

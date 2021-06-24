@@ -5,8 +5,21 @@ __license__ = "BSD 2-Clause"
 """
 
 from bs4 import BeautifulSoup    
-import requests
-import re
+import requests, re
+from source import __metadata__
+
+def generate_header(language="", article_title=""):
+    """Creates the HTTP header which is sent when requesting citations"""
+    header = {
+        'User-Agent': 'wiki_verify/'+__metadata__.__version__,
+        'Accept-Language': "en-US,en;q=0.5",
+        'referer': "https://"+language+".wikipedia.org/"+article_title.replace(" ", "_"),
+        'UPGRADE-INSECURE-REQUESTS': "1",
+        'Save-Data': "on",
+        }
+    if __metadata__.__if_web__: #Don't need to link to the site if it's locally hosted
+        header.__setitem__('Host', 'https://verify.toolforge.org/')
+    return header
 
 def get_URL_text(URL,headers,if_ignore_URL_error=True):
     try:
