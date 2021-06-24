@@ -22,13 +22,15 @@
 		<center><h2>Dashboard</h2></center>
 		<h3>Basic information:</h3>
 		Generated at {{request_time}}<br>
-		This information is kept for {{retention_hours}} hours and then overwritten.
+		Analytics are kept for {{retention_hours}} hours and then overwritten.
 		<h4>Submits:</h4>
 		{{submits}}
 		<h4>Successes:</h4>
 		{{successes}}
 		<h4>Sessions:</h4>
-		{{session_count}} current sessions, expiring after {{session_retention}} minutes.
+		{{session_count}} current sessions, expiring after {{session_retention}} minutes. <br>
+		
+		{{total_sessions}} sessions have been created in total, with {{unused_sessions}} not being used, and the used sessions being held for a total of {{total_used_session_time}} minutes before being used.
 		<br>
 	</body>
 

@@ -21,9 +21,12 @@ analytics_submits = [0]*analytics_retention_hours #How many article submits have
 analytics_successes = [0]*analytics_retention_hours #From submitted articles, how many were successful
 analytics_last_hour_written = 0
 analytics_initialise_time = datetime.now().replace(minute=0,second=0,microsecond=0) #The hour and date the program was started
+analytics_total_sessions = 0
+analytics_unused_sessions = 0
+analytics_total_used_session_time = 0
 
 #Other:
-correction_retention_time = 30 #Minutes
+correction_retention_time = 3 #Minutes
 sessions = []
 
 def analytics_overwrite(hour): #On a new hour, so set what is being written over to zero
@@ -63,7 +66,8 @@ def check_session_expiration():
         minutes_since_creation = (datetime.now() - session_creation_date).total_seconds() / 60.0
         if(minutes_since_creation > correction_retention_time):
             sessions.pop(0)
-            print("Session "+session_ID+" has expired.")
+            global analytics_unused_sessions
+            analytics_unused_sessions+=1 #Take note that the session wasn't put to use
             check_session_expiration() #Keep looping until all expired sessions are deleted
 
 @app.route('/')
@@ -87,6 +91,9 @@ def correct():
         input_text = request.form["correction_text"]
         (session_ID,article_title,data,text_quotes,settings,session_creation_date) = sessions[session_index]
         (language,if_detect_quote,if_detect_NNP,if_detect_JJ,if_detect_NN,if_detect_CD) = settings
+        sessions.pop(session_index) #As the session was used, delete it
+        global analytics_total_used_session_time
+        analytics_total_used_session_time += (datetime.now() - session_creation_date).total_seconds() / 60.0
         
         #Feed back to a more streamlined function for the absolute final output:
         html_output = correction.correction(article_title,data,input_text,text_quotes,language="en",
@@ -154,6 +161,8 @@ def article():
     fail_count = len(external_URLs_failed)
     
     if(fail_count>0): #Create session
+        global analytics_total_sessions
+        analytics_total_sessions+=1
         settings = (POST_language,POST_if_quote,POST_if_NNP,POST_if_JJ,POST_if_NN,POST_if_CD)
         session = (str(urandom(24)),filtered_name,data,text_quotes,settings,datetime.now())
         sessions.append(session)
@@ -178,7 +187,10 @@ def dashboard():
                            submits = analytics_submits,
                            successes = analytics_successes,
                            session_count = len(sessions),
-                           session_retention = correction_retention_time
+                           session_retention = correction_retention_time,
+                           total_sessions = analytics_total_sessions,
+                           unused_sessions = analytics_unused_sessions,
+                           total_used_session_time = analytics_total_used_session_time
                            )
 
 if __name__ == '__main__':

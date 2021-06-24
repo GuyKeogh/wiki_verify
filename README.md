@@ -28,10 +28,7 @@ Text that needs to be checked is marked in red, while text that appears to be fi
 ## Current limitations
 * This is not definitive. It flags things that need double checking to make the fact-checking process easier.
 * This tool does not translate. If citations are in a different language to the article the comparison might not work, so valid text might be marked as needing to be checked.
-
-As this is currently a proof-of-concept tool:
 * It makes direct comparisons. If a word is spelled differently between the texts or a quotation has a clarification inside it that's not present in the source text, then it will be flagged as needing to be checked.
-* It doesn't have rate limiting.
 * This currently only automatically extracts the text in raw HTML, and does not handle PDFs, redirects, server-side refusals to deliver text, etc. If an issue is detected, the opportunity is given to copy-and-paste this text.
 
 ## requirements.txt
