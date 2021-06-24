@@ -18,9 +18,9 @@ analytics_total_used_session_time = 0
 def analytics_overwrite(hour): #On a new hour, so set what is being written over to zero
     #Note: isn't accurate if last write was longer than the retention_hours
     overwrite_range = []
-    
+
     global analytics_last_hour_written
-    if(hour>analytics_last_hour_written):
+    if hour>analytics_last_hour_written:
         for index in range(analytics_last_hour_written, hour):
             overwrite_range.append(index)
     else: #Wraparound of list values
@@ -40,6 +40,6 @@ def analytics_hours_since_init():
     #Get time difference, convert to hours, round down, and if over 168 (a week) start overwriting
     hrs_since = int((((datetime.now()-analytics_initialise_time).total_seconds())/3600)//1)
     hour = hrs_since%ANALYTICS_RETENTION_HOURS
-    if(hour != analytics_last_hour_written):
+    if hour != analytics_last_hour_written:
         analytics_overwrite(hour)
     return hour

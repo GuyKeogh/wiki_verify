@@ -4,7 +4,7 @@ __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
 
-__if_production__ = True
-__version__ = "0.9.0"
-__if_web__ = False
+__IF_PRODUCTION__ = True
+__VERSION__ = "0.9.0"
+__IF_WEB__ = False
 CORRECTION_RETENTION_TIME = 30 #Minutes

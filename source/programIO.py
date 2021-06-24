@@ -7,6 +7,7 @@ __license__ = "BSD 2-Clause"
 
 import requests
 def download_article(article_title):
+    """Download the Wikipedia article text"""
     response = requests.get(
     'https://en.wikipedia.org/w/api.php',
     params={
@@ -20,9 +21,10 @@ def download_article(article_title):
     ).json()
     page = next(iter(response['query']['pages'].values()))
     extracted_page = page['extract']
-    
+
     return extracted_page
 def download_external_URLs(article_title):
+    """Get list of every unique URL in the Wikipedia article"""
     response = requests.get(
     'https://en.wikipedia.org/w/api.php',
     params={
@@ -40,7 +42,7 @@ def download_external_URLs(article_title):
     for element in extracted_page:
         for key, value in element.items():
             external_URLs.append(value)
-    
+
     #Make sure all URLs unique, e.g. an external URL might be repeated twice, so don't download it twice
     return set(external_URLs)
 
@@ -60,28 +62,29 @@ def append_to_file(input_text,file_name):
     file.write(input_text)
     file.close()
 
-def parse_HTML(data):    
+def parse_HTML(data):  
+    """Create the final HTML that's output to the user"""
     combined = ""
     for word in data:
         article_word = encode_text(word[0])
         if(word[1]!="," and word[1]!= "'" and word[1]!= "." and word[0]!= "'s" #Punctuation that doesn't need space before it
            and word[1]!="``" and word[1]!="''" and word[1]!='"'): #Quotation marks
-            if(word[0] == "_BREAK2_"):
+            if word[0] == "_BREAK2_":
                 combined = combined + "<br><br><strong>"
-            elif(word[0] == "_BREAK1_"):
+            elif word[0] == "_BREAK1_":
                 combined = combined + "</strong><br>"
-            elif(word[2] == 'fail'):
+            elif word[2] == 'fail':
                 combined = combined + ''' <span title="'''+word[1]+'''" style="background-color: #ff0000">''' + article_word + "</span>"
-            elif(word[2] == 'pass'):
+            elif word[2] == 'pass':
                 combined = combined + ''' <span title="'''+word[1]+'''" style="background-color: #00ff00">''' + article_word + "</span>"
             else:
                 combined = combined + " " + article_word
-        else: #Punctuation, so no space.
+        else: #Punctuation, so no space needed.
             combined = combined + article_word
     return combined
 
 def encode_text(text):
-    #Encode data to help prevent XSS attacks from text in article:
+    """Encode data to help prevent XSS attacks from text in article"""
     #Most efficient way is to chain these together ( https://stackoverflow.com/questions/3411771/best-way-to-replace-multiple-characters-in-a-string )
     text = text.replace('&','&amp').replace('<','&lt').replace('>','&gt').replace('"','&quot').replace("'",'&#x27')
     return text

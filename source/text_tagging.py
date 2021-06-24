@@ -4,14 +4,16 @@ __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
 
-import nltk, re
+import re
+import nltk
+
 def tag_data(text):
     #Extract info
     sentences = nltk.sent_tokenize(text) #Organize into individual sentences
     data = []
     for sent in sentences:
         data = data + nltk.pos_tag(nltk.word_tokenize(sent))
-    
+
     tagged_data = []
     index = 0
     for word in data:
@@ -19,7 +21,7 @@ def tag_data(text):
         index+=1
     return tagged_data
 def tag_text_of_type(tag_type, data):
-    #Only output words of specific type
+    """Only output already tokenised words of specific type that was requested"""
     text_of_tag = []
     index = 0
     for word in data:
@@ -31,6 +33,7 @@ def tag_text_quotes(text):
     """Detects all info in single or double quotes, and outputs all these as strings in a list"""
     matches=re.findall(r'\"(.+?)\"',text)
     return matches
+
 def eval_citation(citation_text):
     sentences = nltk.sent_tokenize(citation_text) #Organize into individual sentences
     data = []
@@ -47,10 +50,9 @@ def eval_citation_for_type(citation_text, key):
     return unique_terms_cite
 
 def check_quote_in_text(quote_string, citation_text):
-    if citation_text.find(quote_string) != -1:
-        return True
-    else:
-        return False
+    """Returns True if the input quote is anywhere in the input text, and False if not"""
+    return bool(citation_text.find(quote_string) != -1)
+
 def tag_comparisons(term,text_of_tag, unique_terms_citations_of_tag, data):
     for elem in text_of_tag:
         if data[elem[1]][2] != 'pass':
