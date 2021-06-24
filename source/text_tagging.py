@@ -117,7 +117,7 @@ def compare_citation_and_text_terms(data,
         data = tag_comparisons(text_CD, unique_terms_citations_CD, data)
     return data
 
-def mark_present_quotes(data,quote,if_quote_in_citation):
+def mark_present_quotes(data, quote, if_quote_in_citation):
     """With a citation and a text, marks if it's in that text"""
     quote_in_data_startword = 0
     index = 0
@@ -150,7 +150,7 @@ def detect_quotes_in_string(data, input_text, text_quotes):
     """With every quote and the sole text (used in correction), mark citations present"""
     for quote in text_quotes:
         if_quote_in_citation = check_quote_in_text(quote, input_text)
-        data = mark_present_quotes(data,quote,if_quote_in_citation)
+        data = mark_present_quotes(data, quote, if_quote_in_citation)
     return data
 def detect_quotes_in_multiple_texts(data, citation_text, text_quotes):
     """With every quote and all texts, mark all citations that are present"""
@@ -160,6 +160,6 @@ def detect_quotes_in_multiple_texts(data, citation_text, text_quotes):
             if if_quote_in_citation == False: #Just needs to be in one citation
                 if_quote_in_citation = check_quote_in_text(quote, citation)
 
-        data = mark_present_quotes(data,quote,if_quote_in_citation)
+        data = mark_present_quotes(data, quote, if_quote_in_citation)
     return data
 

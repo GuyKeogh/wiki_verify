@@ -16,7 +16,7 @@ def correction(article_title,
                if_detect_NN=False,
                if_detect_CD=False):
     """Takes the user-inputted citation text, processes it, and gives the final program output"""
-    
+
     if(input_text!=""):
         (unique_terms_citations_CD,
          unique_terms_citations_JJ,
@@ -36,10 +36,8 @@ def correction(article_title,
                                                if_detect_JJ=if_detect_JJ,
                                                if_detect_NN=if_detect_NN,
                                                if_detect_CD=if_detect_CD)
-
-        #Compare quotes
         if(if_detect_quote):
-            data = text_tagging.detect_quotes_in_string(data,input_text,text_quotes)
+            data = text_tagging.detect_quotes_in_string(data, input_text, text_quotes)
 
     html_output = programIO.parse_HTML(data)
     return html_output

@@ -56,8 +56,9 @@ def main(article_title,language="en",
                                                                     article_title=article_title)
 
         for URL in external_URLs:
-            #text = programIO.load_file(str(citeindex))
-            text = citation_scraper.get_URL_text(URL,citation_refferer_header,if_ignore_URL_error)
+            text = citation_scraper.get_URL_text(URL,
+                                                 citation_refferer_header,
+                                                 if_ignore_URL_error)
             if text != "404":
                 try: #Do the processing, which is a good enough delay before making another request.
                     (terms_citations_CD_to_append,
@@ -104,5 +105,5 @@ def main(article_title,language="en",
 
     #Write html output as string:
     html_output = programIO.parse_HTML(data)
-    output = (html_output,external_URLs_failed,data,text_quotes)
+    output = (html_output, external_URLs_failed, data, text_quotes)
     return output

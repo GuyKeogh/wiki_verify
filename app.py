@@ -32,8 +32,8 @@ def correct():
 
     if if_session_exists:
         input_text = request.form["correction_text"]
-        (session_ID,article_title,data,text_quotes,settings,session_creation_date) = session.sessions[session_index]
-        (language,if_detect_quote,if_detect_NNP,if_detect_JJ,if_detect_NN,if_detect_CD) = settings
+        (session_ID, article_title, data, text_quotes, settings, session_creation_date) = session.sessions[session_index]
+        (language, if_detect_quote, if_detect_NNP, if_detect_JJ, if_detect_NN, if_detect_CD) = settings
         session.sessions.pop(session_index) #As the session was used, delete it
         analytics.analytics_total_used_session_time += (datetime.now() - session_creation_date).total_seconds() / 60.0
         
@@ -54,7 +54,7 @@ def correct():
                                page=article_title,
                                language=language)
     else:
-        error_message = "The session has expired (over "+str(__metadata__.correction_retention_time)+" minutes since request)."
+        error_message = "The session has expired (over "+str(__metadata__.CORRECTION_RETENTION_TIME)+" minutes since request, or already used)."
         return render_template("index.html", error_message=error_message)
 
 @app.route('/article', methods = ["POST"])
@@ -159,7 +159,7 @@ def robots():
 
 @app.route('/dashboard')
 def dashboard():
-    """Info about how the program is used to help with optimisation"""
+    """Info about how the program is used, to help with optimisation"""
     session.check_session_expiration()
     return render_template("dashboard.html",
                            retention_hours=analytics.ANALYTICS_RETENTION_HOURS,
