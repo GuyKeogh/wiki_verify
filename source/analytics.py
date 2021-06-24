@@ -26,7 +26,7 @@ def analytics_overwrite(hour): #On a new hour, so set what is being written over
     else: #Wraparound of list values
         for index in range(analytics_last_hour_written, ANALYTICS_RETENTION_HOURS):
             overwrite_range.append(index)
-        for index in range(0,hour):
+        for index in range(0, hour):
             overwrite_range.append(index)
     
     analytics_last_hour_written = hour

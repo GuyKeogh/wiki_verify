@@ -18,4 +18,3 @@ def check_session_expiration():
             sessions.pop(0)
             analytics.analytics_unused_sessions+=1 #Take note that the session wasn't put to use
             check_session_expiration() #Keep looping until all expired sessions are deleted
-    return #List of sessions is empty

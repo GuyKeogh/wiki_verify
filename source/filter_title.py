@@ -26,8 +26,8 @@ def if_title_invalid_symbol_use(title):
         '}', 
         '#', #Could possibly just ignore text after this
     ]  
-    for t in title:
-        if t in char_blacklist:
+    for elem in title:
+        if elem in char_blacklist:
             return True #If any symbol is bad it's all invalid.
 
     #Symbols not allowed as first character:

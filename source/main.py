@@ -46,12 +46,13 @@ def main(article_title,language="en",
         citeindex = 0
 
         #Request header sent to citation server:
-        citation_refferer_header = citation_scraper.generate_header(language=language, article_title=article_title)
+        citation_refferer_header = citation_scraper.generate_header(language=language,
+                                                                    article_title=article_title)
 
         for URL in external_URLs:
             #text = programIO.load_file(str(citeindex))
             text = citation_scraper.get_URL_text(URL,citation_refferer_header,if_ignore_URL_error)
-            if(text != "404"):
+            if text != "404":
                 try: #Do the processing, which is a good enough delay before making another request.
                     tokenized_citation = text_tagging.eval_citation(text)
                     #NN (Proper noun, singular)
@@ -74,9 +75,9 @@ def main(article_title,language="en",
                     citation_text.append(text)
                 except Exception as exc:
                     external_URLs_failed.append(URL)
-                    if(if_ignore_URL_error == False):
+                    if not if_ignore_URL_error:
                         print("Error with URL '",URL,"' with error ",exc)
-            elif(if_ignore_URL_error == False):
+            elif not if_ignore_URL_error:
                 text = input("Copy and paste text of above URL, or leave blank: ")
                 tokenized_citation = text_tagging.eval_citation(text)
                 citetext_NNP = text_tagging.eval_citation_for_type(tokenized_citation, 'NNP')
@@ -92,16 +93,16 @@ def main(article_title,language="en",
         text_CD = []
         if if_detect_JJ:
             text_JJ = text_tagging.tag_text_of_type("JJ",data)
-            data = text_tagging.tag_comparisons("JJ", text_JJ, unique_terms_citations_JJ, data)
+            data = text_tagging.tag_comparisons(text_JJ, unique_terms_citations_JJ, data)
         if if_detect_NNP:
             text_NNP = text_tagging.tag_text_of_type("NNP",data)
-            data = text_tagging.tag_comparisons("NNP", text_NNP, unique_terms_citations_NNP, data)
+            data = text_tagging.tag_comparisons(text_NNP, unique_terms_citations_NNP, data)
         if if_detect_NN:
             text_NN = text_tagging.tag_text_of_type("NN",data)
-            data = text_tagging.tag_comparisons("NN", text_NN, unique_terms_citations_NN, data)
+            data = text_tagging.tag_comparisons(text_NN, unique_terms_citations_NN, data)
         if if_detect_CD:
             text_CD = text_tagging.tag_text_of_type("CD",data)
-            data = text_tagging.tag_comparisons("CD", text_CD, unique_terms_citations_CD, data)
+            data = text_tagging.tag_comparisons(text_CD, unique_terms_citations_CD, data)
 
         #Compare quotes
         if if_detect_quote:
@@ -118,14 +119,14 @@ def main(article_title,language="en",
                 
                 #Find quote in data
                 for word in data:
-                    if if_in_quote==False:
+                    if not if_in_quote:
                         if word[0]==quote_list[0]:
                             if_in_quote = True
                             quote_in_data_startword = index
                     else: #If we seem to be in a quote, check it's still true
-                        if len(quote_list)==index-quote_in_data_startword: #Successfully detected a quote
+                        if len(quote_list)==index-quote_in_data_startword: #Detected a quote
                             for k in range(quote_in_data_startword, index, 1):
-                                if if_quote_in_citation == False:
+                                if not if_quote_in_citation:
                                     data[k][1] = 'quote'
                                     data[k][2] = 'fail'
                                 else:

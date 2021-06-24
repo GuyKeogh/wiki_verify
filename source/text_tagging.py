@@ -53,7 +53,7 @@ def check_quote_in_text(quote_string, citation_text):
     """Returns True if the input quote is anywhere in the input text, and False if not"""
     return bool(citation_text.find(quote_string) != -1)
 
-def tag_comparisons(term,text_of_tag, unique_terms_citations_of_tag, data):
+def tag_comparisons(text_of_tag, unique_terms_citations_of_tag, data):
     for elem in text_of_tag:
         if data[elem[1]][2] != 'pass':
             if elem[0] not in unique_terms_citations_of_tag:

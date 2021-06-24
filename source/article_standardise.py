@@ -14,7 +14,7 @@ def space_after_punctuation(data):
             if elem != " ":
                 data = data[:elemcount] + ' ' + data[elemcount:]
                 elemcount+=1 #Added element before us, putting us 1 ahead of original. Compensate.
-        if elem in ('.',','):
+        if elem in ('.', ','):
             prior_elem_was_punctuation = True
         else:
             prior_elem_was_punctuation = False
