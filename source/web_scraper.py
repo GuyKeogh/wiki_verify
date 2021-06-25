@@ -6,8 +6,54 @@ __license__ = "BSD 2-Clause"
 
 import re
 import requests
-from bs4 import BeautifulSoup    
+from bs4 import BeautifulSoup
 from source import __metadata__
+
+def download_article(article_title):
+    """Download the Wikipedia article text"""
+    response = requests.get(
+    'https://en.wikipedia.org/w/api.php',
+    params={
+    'action': 'query',
+    'titles': article_title,
+    'format': 'json',
+    'prop': 'extracts',
+    'exsectionformat': 'plain',
+    }
+    ).json()
+    page = next(iter(response['query']['pages'].values()))
+    html_page = page['extract']
+    
+    html_page = html_page.replace('<h2>',' _HEADER2START_ ').replace('</h2>',' _HEADER2END_ ').replace('<h3>',
+                        ' _HEADER3START_ ').replace('</h3>',' _HEADER3END_ ').replace('<b>',
+                        ' _BOLDSTART_ ').replace('</b>',' _BOLDEND_ ').replace("<i>",' _ITALICSTART_ ').replace("</i>",
+                        ' _ITALICEND_ ').replace("<p>",' _PARAGRAPHSTART_ ').replace("</p>",' _PARAGRAPHEND_ ')
+    parsed_html = BeautifulSoup(html_page,'html.parser')
+    text = parsed_html.get_text()
+    
+    return text
+def download_external_URLs(article_title):
+    """Get list of every unique URL in the Wikipedia article"""
+    response = requests.get(
+    'https://en.wikipedia.org/w/api.php',
+    params={
+    'action': 'query',
+    'titles': article_title,
+    'format': 'json',
+    'prop': 'extlinks',
+    }
+    ).json()
+    page = next(iter(response['query']['pages'].values()))
+    extracted_page = page['extlinks']
+    
+    #Access the created dictionary of URLs and output a single list
+    external_URLs = []
+    for element in extracted_page:
+        for key, value in element.items():
+            external_URLs.append(value)
+
+    #Make sure all URLs unique, e.g. an external URL might be repeated twice, so don't download it twice
+    return set(external_URLs)
 
 def generate_header(language="", article_title=""):
     """Creates the HTTP header which is sent when requesting citations"""

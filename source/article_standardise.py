@@ -40,30 +40,3 @@ def strip_end_sections(text):
         text = text[:end_of_document]
 
     return(text)
-def detect_headings(text):
-    """Detect locations of headings within text, and their start and end locations"""
-    title_indexes = []
-    slash_n_in_row = 0
-    title_index = 0 #How many characters into current title
-    index = 0
-    if_title = False
-    for letter in text:
-        if letter == "\n":
-            slash_n_in_row += 1
-            if slash_n_in_row == 3:
-                if_title = True
-            else:
-                if if_title:
-                    end = index
-                    start = index - title_index
-                    #print("Start: ",start," end: ",end)
-                    title_indexes.append(tuple((start,end)))
-                if_title = False
-        else:
-            slash_n_in_row = 0
-            if if_title:
-                title_index+=1
-            else:
-                title_index = 0
-        index+=1
-    return title_indexes

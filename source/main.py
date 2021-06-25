@@ -10,7 +10,7 @@ __description__ = "Backend of verification tool"
 __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
-from source import article_standardise, programIO, text_tagging, citation_scraper
+from source import article_standardise, programIO, text_tagging, web_scraper
 
 def main(article_title,language="en",
          if_ignore_URL_error = True,
@@ -18,7 +18,7 @@ def main(article_title,language="en",
          ):
 
     try: #Download article
-        original_text = programIO.download_article(article_title)
+        original_text = web_scraper.download_article(article_title)
     except:
         return "500"
 
@@ -26,11 +26,6 @@ def main(article_title,language="en",
 
     text_quotes = text_tagging.tag_text_quotes(article_text)
     article_text = article_standardise.space_after_punctuation(article_text)
-    headings = article_standardise.detect_headings(article_text)
-
-    for heading in reversed(headings):
-        article_text = article_text[:heading[1]] + ' _BREAK1_ ' + article_text[heading[1]:]
-        article_text = article_text[:heading[0]] + ' _BREAK2_ ' + article_text[heading[0]:]
 
     data = text_tagging.tag_data(article_text)
 
@@ -42,7 +37,7 @@ def main(article_title,language="en",
     #Handle citations:
     external_URLs_failed = []
     if if_evaluate_citations:
-        external_URLs = programIO.download_external_URLs(article_title)
+        external_URLs = web_scraper.download_external_URLs(article_title)
 
         unique_terms_citations_NNP = []
         unique_terms_citations_NN = []
@@ -52,11 +47,11 @@ def main(article_title,language="en",
         citeindex = 0
 
         #Request header sent to citation server:
-        citation_refferer_header = citation_scraper.generate_header(language=language,
+        citation_refferer_header = web_scraper.generate_header(language=language,
                                                                     article_title=article_title)
 
         for URL in external_URLs:
-            text = citation_scraper.get_URL_text(URL,
+            text = web_scraper.get_URL_text(URL,
                                                  citation_refferer_header,
                                                  if_ignore_URL_error)
             if text != "404":

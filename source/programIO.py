@@ -5,47 +5,6 @@ __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
 
-import requests
-def download_article(article_title):
-    """Download the Wikipedia article text"""
-    response = requests.get(
-    'https://en.wikipedia.org/w/api.php',
-    params={
-    'action': 'query',
-    'titles': article_title,
-    'format': 'json',
-    'prop': 'extracts',
-    'explaintext': True,
-    'exsectionformat': 'plain',
-    }
-    ).json()
-    page = next(iter(response['query']['pages'].values()))
-    extracted_page = page['extract']
-
-    return extracted_page
-def download_external_URLs(article_title):
-    """Get list of every unique URL in the Wikipedia article"""
-    response = requests.get(
-    'https://en.wikipedia.org/w/api.php',
-    params={
-    'action': 'query',
-    'titles': article_title,
-    'format': 'json',
-    'prop': 'extlinks',
-    }
-    ).json()
-    page = next(iter(response['query']['pages'].values()))
-    extracted_page = page['extlinks']
-    
-    #Access the created dictionary of URLs and output a single list
-    external_URLs = []
-    for element in extracted_page:
-        for key, value in element.items():
-            external_URLs.append(value)
-
-    #Make sure all URLs unique, e.g. an external URL might be repeated twice, so don't download it twice
-    return set(external_URLs)
-
 def load_file(file_name):
     file = open(file_name, "rt")
     read_text = file.read()
@@ -64,15 +23,43 @@ def append_to_file(input_text,file_name):
 
 def parse_HTML(data):  
     """Create the final HTML that's output to the user"""
+    
+    if_header2_open = if_header3_open = if_bold_open = if_italic_open = if_paragraph_open = False
+    
     combined = ""
     for word in data:
         article_word = encode_text(word[0])
         if(word[1]!="," and word[1]!= "'" and word[1]!= "." and word[0]!= "'s" #Punctuation that doesn't need space before it
            and word[1]!="``" and word[1]!="''" and word[1]!='"'): #Quotation marks
-            if word[0] == "_BREAK2_":
-                combined = combined + "<br><br><strong>"
-            elif word[0] == "_BREAK1_":
-                combined = combined + "</strong><br>"
+            if word[0] == "_HEADER2START_":
+                combined = combined + "<h3>" #<h2> is too big, so consistently bring it down a number
+                if_header2_open = True
+            elif word[0] == "_HEADER2END_":
+                combined = combined + "</h3>"
+            elif word[0] == "_HEADER3START_":
+                combined = combined + "<h4>"
+                if_header3_open = True
+            elif word[0] == "_HEADER3END_":
+                combined = combined + "</h4>"
+                if_header3_open = False
+            elif word[0] == "_BOLDSTART_":
+                combined = combined + "<b>"
+                if_bold_open = True
+            elif word[0] == "_BOLDEND_":
+                combined = combined + "</b>"
+                if_bold_open = False
+            elif word[0] == "_ITALICSTART_":
+                combined = combined + "<i>"
+                if_italic_open = True
+            elif word[0] == "_ITALICEND_":
+                combined = combined + "</i>"
+                if_italic_open = False
+            elif word[0] == "_PARAGRAPHSTART_":
+                combined = combined + "<p>"
+                if_paragraph_open = True
+            elif word[0] == "_PARAGRAPHEND_":
+                combined = combined + "</p>"
+                if_paragraph_open = False
             elif word[2] == 'fail':
                 combined = combined + ''' <span title="'''+word[1]+'''" style="background-color: #ff0000">''' + article_word + "</span>"
             elif word[2] == 'pass':
@@ -81,6 +68,17 @@ def parse_HTML(data):
                 combined = combined + " " + article_word
         else: #Punctuation, so no space needed.
             combined = combined + article_word
+    if if_header2_open:
+        combined = combined + "</h3>"
+    if if_header3_open:
+        combined = combined + "</h4>"
+    if if_bold_open:
+        combined = combined + "</b>"
+    if if_italic_open:
+        combined = combined + "</i>"
+    if if_paragraph_open:
+        combined = combined + "</p>"
+    
     return combined
 
 def encode_text(text):
