@@ -42,7 +42,7 @@ def correct():
                                             data,
                                             input_text,
                                             text_quotes,
-                                            language="en",
+                                            language=language,
                                             if_detect_quote=if_detect_quote,
                                             if_detect_NNP=if_detect_NNP,
                                             if_detect_JJ=if_detect_JJ,
@@ -100,7 +100,7 @@ def article():
                                error_message="An article cannot have this title (invalid symbol use).")
     
     #Language checks:
-    if language!="en":
+    if language!="en" and language !="simple":
         return render_template("index.html", error_message = "Language not supported.")
 
     #Finished checks

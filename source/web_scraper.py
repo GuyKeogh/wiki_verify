@@ -9,10 +9,10 @@ import requests
 from bs4 import BeautifulSoup
 from source import __metadata__
 
-def download_article(article_title):
-    """Download the Wikipedia article text"""
+def download_article(article_title, language):
+    """Download the Wikipedia article text and mark safe HTML elements with codes so they remain the same"""
     response = requests.get(
-    'https://en.wikipedia.org/w/api.php',
+    'https://'+language+'.wikipedia.org/w/api.php',
     params={
     'action': 'query',
     'titles': article_title,
@@ -28,14 +28,14 @@ def download_article(article_title):
                         ' _HEADER3START_ ').replace('</h3>',' _HEADER3END_ ').replace('<b>',
                         ' _BOLDSTART_ ').replace('</b>',' _BOLDEND_ ').replace("<i>",' _ITALICSTART_ ').replace("</i>",
                         ' _ITALICEND_ ').replace("<p>",' _PARAGRAPHSTART_ ').replace("</p>",' _PARAGRAPHEND_ ')
-    parsed_html = BeautifulSoup(html_page,'html.parser')
+    parsed_html = BeautifulSoup(html_page, 'html.parser')
     text = parsed_html.get_text()
     
     return text
-def download_external_URLs(article_title):
+def download_external_URLs(article_title, language):
     """Get list of every unique URL in the Wikipedia article"""
     response = requests.get(
-    'https://en.wikipedia.org/w/api.php',
+    'https://'+language+'.wikipedia.org/w/api.php',
     params={
     'action': 'query',
     'titles': article_title,
@@ -64,8 +64,6 @@ def generate_header(language="", article_title=""):
         'UPGRADE-INSECURE-REQUESTS': "1",
         'Save-Data': "on",
         }
-    if __metadata__.__IF_WEB__: #Don't need to link to the site if it's locally hosted
-        header.__setitem__('Host', 'https://verify.toolforge.org/')
     return header
 
 def get_URL_text(URL,headers,if_ignore_URL_error=True):
@@ -74,12 +72,9 @@ def get_URL_text(URL,headers,if_ignore_URL_error=True):
         res = requests.get(URL, headers=headers, timeout=5, allow_redirects=True)
         try:
             res.raise_for_status() #Fails if error occurs, which is caught as an exception
-
             html_page = res.content
             parsed_html = BeautifulSoup(html_page,'html.parser')
-            text = parsed_html.find_all(text=True)
-
-            plain_text = remove_junk(text)
+            plain_text = remove_junk(parsed_html.find_all(text=True))
             return plain_text
         except Exception as exc:
             if not if_ignore_URL_error:

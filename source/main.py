@@ -18,9 +18,9 @@ def main(article_title,language="en",
          ):
 
     try: #Download article
-        original_text = web_scraper.download_article(article_title)
+        original_text = web_scraper.download_article(article_title,language)
     except:
-        return "500"
+        return ("500",[],[],[])
 
     article_text = article_standardise.strip_end_sections(original_text)
 
@@ -37,7 +37,7 @@ def main(article_title,language="en",
     #Handle citations:
     external_URLs_failed = []
     if if_evaluate_citations:
-        external_URLs = web_scraper.download_external_URLs(article_title)
+        external_URLs = web_scraper.download_external_URLs(article_title,language)
 
         unique_terms_citations_NNP = []
         unique_terms_citations_NN = []
@@ -52,8 +52,8 @@ def main(article_title,language="en",
 
         for URL in external_URLs:
             text = web_scraper.get_URL_text(URL,
-                                                 citation_refferer_header,
-                                                 if_ignore_URL_error)
+                                            citation_refferer_header,
+                                            if_ignore_URL_error)
             if text != "404":
                 try: #Do the processing, which is a good enough delay before making another request.
                     (terms_citations_CD_to_append,
