@@ -36,11 +36,11 @@ To download page JSON and HTML, and extract the raw text from these:
 * requests
 * beautifulsoup4
 
-Natural language processing to extract word types, where the lists of each type are then compared:
-* nltk
-
 To allow copy-and-pasting of content in URLs which could not be downloaded:
 * flask_session
+
+Natural language processing to extract word types, where the lists of each type are then compared:
+* nltk
 
 For the standalone app only:
 * webbrowser
