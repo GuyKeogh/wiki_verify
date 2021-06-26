@@ -30,14 +30,14 @@ def download_article(article_title, language):
                         ' _ITALICEND_ ').replace("<p>",' _PARAGRAPHSTART_ ').replace("</p>",' _PARAGRAPHEND_ ')
     parsed_html = BeautifulSoup(html_page, 'html.parser')
     text = parsed_html.get_text()
-    
+
     return text
 def download_external_URLs(article_title, language):
     """Get list of every unique URL in the Wikipedia article"""
     external_link_limit = 500
-    if __metadata__.__IF_WEB__==True:
+    if __metadata__.__IF_WEB__:
         external_link_limit = __metadata__.__WEB_EXTERNAL_URL_LIMIT__+1 #+1 so error can be reported if too many
-    
+
     response = requests.get(
     'https://'+language+'.wikipedia.org/w/api.php',
     params={
@@ -82,7 +82,7 @@ def get_URL_text(URL,headers,if_ignore_URL_error=True):
             parsed_html = BeautifulSoup(html_page,'html.parser')
             plain_text = remove_junk(parsed_html.find_all(text=True)) #Best method of getting bare text
             #plain_text = parsed_html.get_text() #Alternate method of getting bare text
-            
+
             #Output text of every citation to file:
             #print("\n\n\nURL: "+URL, file=open("output.txt", "a"))
             #print(plain_text, file=open("output.txt", "a"))
@@ -105,12 +105,12 @@ def remove_junk(text):
         'header',
         'html',
         'meta',
-        'head', 
+        'head',
         'input',
         'script',
         'footer',
         'style',
-    ]  
+    ]
 
     for word in text:
         if word.parent.name not in word_blacklist:

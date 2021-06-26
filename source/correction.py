@@ -17,7 +17,7 @@ def correction(article_title,
                if_detect_CD=False):
     """Takes the user-inputted citation text, processes it, and gives the final program output"""
 
-    if(input_text!=""):
+    if input_text!="":
         (unique_terms_citations_CD,
          unique_terms_citations_JJ,
          unique_terms_citations_NN,

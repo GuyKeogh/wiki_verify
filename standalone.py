@@ -24,7 +24,7 @@ def main_standalone():
                 print("The article does not exist, or another error occurred.")
         else:
             print("Cancelling...")
-        
+
         if_continue = optional_input("-------\n\nDo you wish to run the program again? Yes or No: ")
 
 def if_title_valid(title):
@@ -47,7 +47,7 @@ def optional_input(text):
         #Take input on whether to continue
         continuity_input = input(text)
         continuity_input_upper = continuity_input.upper() #Easier comparison
-       
+
         if continuity_input_upper == "NO":
             return False
         elif continuity_input_upper == "YES":

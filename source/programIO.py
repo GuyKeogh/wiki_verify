@@ -23,9 +23,9 @@ def append_to_file(input_text,file_name):
 
 def parse_HTML(data):  
     """Create the final HTML that's output to the user"""
-    
+
     if_header2_open = if_header3_open = if_bold_open = if_italic_open = if_paragraph_open = False
-    
+
     combined = ""
     for word in data:
         article_word = encode_text(word[0])

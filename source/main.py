@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jun 24 19:59:07 2021
-
-@author: guyke
-"""
-
-"""
 __description__ = "Backend of verification tool"
 __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
@@ -38,9 +32,8 @@ def main(article_title,language="en",
     external_URLs_failed = []
     if if_evaluate_citations:
         external_URLs = web_scraper.download_external_URLs(article_title,language)
-        print(external_URLs, file=open("URLs.txt", "a"))
         
-        if __metadata__.__IF_WEB__ == True and len(external_URLs)>__metadata__.__WEB_EXTERNAL_URL_LIMIT__:
+        if __metadata__.__IF_WEB__ and len(external_URLs)>__metadata__.__WEB_EXTERNAL_URL_LIMIT__:
             return ("_ERROR: too many external_URLs_",[],[],[])
         else:
             analytics.total_urls_requested += len(external_URLs)
@@ -60,12 +53,12 @@ def main(article_title,language="en",
             if_get_URL_text = True
             text = ""
             for prohib_URL in __metadata__.__DO_NOT_SCRAPE_URLS__:
-                if(URL.find(prohib_URL)!=-1):
+                if URL.find(prohib_URL)!=-1:
                     if_get_URL_text = False
                     text = "404"
                     break #Don't try other URLs in list
             
-            if if_get_URL_text==True:
+            if if_get_URL_text:
                 text = web_scraper.get_URL_text(URL,
                                                 citation_refferer_header,
                                                 if_ignore_URL_error)

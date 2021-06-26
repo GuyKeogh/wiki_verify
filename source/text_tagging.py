@@ -26,7 +26,7 @@ def tag_text_of_type(tag_type, data):
     text_of_tag = []
     index = 0
     for word in data:
-        if tag_type in word[1]: 
+        if tag_type in word[1]:
             text_of_tag.append(tuple((word[0], index)))
         index+=1
     return text_of_tag
@@ -64,7 +64,7 @@ def tag_comparisons(text_of_tag, unique_terms_citations_of_tag, data):
     return data
 def get_citation_unique_terms(text,
                               if_detect_NNP = False,
-                              if_detect_JJ = False, 
+                              if_detect_JJ = False,
                               if_detect_NN = False,
                               if_detect_CD = False):
     unique_terms_citations_NNP = []
@@ -132,7 +132,7 @@ def mark_present_quotes(data, quote, if_quote_in_citation):
         else: #If we seem to be in a quote, check it's still true
             if len(quote_list)==(index-quote_in_data_startword): #Detected a quote
                 for k in range(quote_in_data_startword, index, 1):
-                    if if_quote_in_citation == False:
+                    if not if_quote_in_citation:
                         data[k][1] = 'quote'
                         data[k][2] = 'fail'
                     else:
@@ -157,9 +157,8 @@ def detect_quotes_in_multiple_texts(data, citation_text, text_quotes):
     for quote in text_quotes:
         if_quote_in_citation = False
         for citation in citation_text:
-            if if_quote_in_citation == False: #Just needs to be in one citation
+            if not if_quote_in_citation: #Just needs to be in one citation
                 if_quote_in_citation = check_quote_in_text(quote, citation)
 
         data = mark_present_quotes(data, quote, if_quote_in_citation)
     return data
-

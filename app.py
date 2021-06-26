@@ -64,13 +64,13 @@ def article():
     analytics.hourly_submits[analytics.hours_since_init()] += 1
     analytics.total_submits += 1
     session.check_session_expiration()
-    
+
     #Getting from article:
     if_quote = if_cardinal_number = if_singular_proper_noun = if_noun = if_adjective = False
     
     POST_name = request.form["page"] #Article name input by user
     language = request.form["lang"] #Wikipedia language input by user
-    
+
     #Settings checkboxes. These are only delivered by POST if they are checked, so assume they are False unless delivered:
     if request.form.get("ifDefaultSettings"):
         if_quote = if_cardinal_number = if_singular_proper_noun = True
@@ -85,9 +85,9 @@ def article():
             if_noun = True
         if request.form.get("JJ_check"):
             if_adjective = True
-        
+
     filtered_name = filter_title.filter_title(POST_name) #Removes whitespace, etc
-    
+
     #Filter bad inputs:
     title_length = len(filtered_name)
     if title_length>=256: #Article names must be less than 256 bytes
@@ -99,7 +99,7 @@ def article():
     if filter_title.if_title_invalid_symbol_use(filtered_name): #Problematic symbol use
         return render_template("index.html",
                                error_message="An article cannot have this title (invalid symbol use).")
-    
+
     #Language checks:
     if language!="en" and language !="simple":
         return render_template("index.html", error_message = "Language not supported.")

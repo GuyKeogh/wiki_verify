@@ -15,7 +15,7 @@ def if_title_invalid_symbol_use(title):
     title_length = len(title)
     if title_length==0: #To prevent out of bounds
         return True
-    
+
     #Symbols not allowed at all:
     char_blacklist = [ #Characters not possible in a title
         '[',
@@ -23,9 +23,9 @@ def if_title_invalid_symbol_use(title):
         '<',
         '>',
         '{',
-        '}', 
+        '}',
         '#', #Could possibly just ignore text after this
-    ]  
+    ]
     for elem in title:
         if elem in char_blacklist:
             return True #If any symbol is bad it's all invalid.
@@ -52,6 +52,6 @@ def if_title_invalid_symbol_use(title):
 
     #3 or more consecutive tildes not allowed
     if title.find("~~~")!=-1:
-        return True        
+        return True
 
     return False #No fails, so it seems technically possible

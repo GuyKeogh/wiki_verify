@@ -30,7 +30,7 @@ def overwrite(hour): #On a new hour, so set what is being written over to zero
             overwrite_range.append(index)
         for index in range(0, hour):
             overwrite_range.append(index)
-    
+
     last_hour_written = hour
     #Do the overwriting:
     for elem in overwrite_range:
