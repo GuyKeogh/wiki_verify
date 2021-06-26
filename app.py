@@ -6,11 +6,38 @@ __license__ = "BSD 2-Clause"
 
 from datetime import datetime
 from os import urandom, cpu_count
-from flask import Flask, request, render_template, send_file
-from source import main, filter_title, __metadata__, correction, analytics, session
+from flask import Flask, session, request, render_template, send_file
+from flask_session import Session
+from source import main, filter_title, __metadata__, correction
 
+"""
 app = Flask(__name__)
 app.config["SECRET_KEY"] = str(urandom(24));
+app.secret_key = app.config["SECRET_KEY"]
+app.config.update(SECRET_KEY=app.config["SECRET_KEY"])
+SESSION_TYPE = 'redis' #server-side session, as client-side has a limit of 4093 bytes, which is only good for stubs
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_REDIS'] = redis.from_url('redis://localhost:6379')
+
+"""
+
+# Create the Flask application
+app = Flask(__name__)
+
+# Details on the Secret Key: https://flask.palletsprojects.com/en/1.1.x/config/#SECRET_KEY
+# NOTE: The secret key is used to cryptographically-sign the cookies used for storing
+#       the session identifier.
+app.secret_key = 'BAD_SECRET_KEY'
+
+# Configure Redis for storing the session data on the server-side
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_PERMANENT'] = True
+app.config['SESSION_USE_SIGNER'] = True
+app.config['PERMANENT_SESSION_LIFETIME'] = 10
+app.config['SESSION_FILE_THRESHOLD'] = 2 #How many files under flask_session before it starts deleting oldest
+
+server_session = Session(app)
 
 @app.route('/')
 def index():
@@ -21,22 +48,11 @@ def index():
 def correct():
     """When downloading citations failed, this allows the user to copy-and-paste them and continue"""
     POST_session = request.form["session_ID"]
-    if_session_exists = False
-    session_index = 0
-    #Check if the session exists:
-    for elem in session.sessions:
-        if elem[0]==POST_session:
-            if_session_exists = True
-            break
-        session_index+=1
-
-    if if_session_exists:
-        input_text = request.form["correction_text"]
-        (session_ID, article_title, data, text_quotes, settings, session_creation_date) = session.sessions[session_index]
+    try:
+        (article_title, data, text_quotes, settings, session_creation_date) = session[POST_session]
         (language, if_detect_quote, if_detect_NNP, if_detect_JJ, if_detect_NN, if_detect_CD) = settings
-        session.sessions.pop(session_index) #As the session was used, delete it
-        analytics.total_used_session_time += (datetime.now() - session_creation_date).total_seconds() / 60.0
         
+        input_text = request.form["correction_text"]
         #Feed back to a more streamlined function for the absolute final output:
         html_output = correction.correction(article_title,
                                             data,
@@ -53,18 +69,13 @@ def correct():
                                text=html_output,
                                page=article_title,
                                language=language)
-    else:
-        error_message = "The session has expired (over "+str(__metadata__.CORRECTION_RETENTION_TIME)+" minutes since request, or already used)."
+    except:
+        error_message = "The session has expired."
         return render_template("index.html", error_message=error_message)
 
 @app.route('/article', methods = ["POST"])
 def article():
     """Display the article, including calling the processing of it"""
-    #Maintenance:
-    analytics.hourly_submits[analytics.hours_since_init()] += 1
-    analytics.total_submits += 1
-    session.check_session_expiration()
-
     #Getting from article:
     if_quote = if_cardinal_number = if_singular_proper_noun = if_noun = if_adjective = False
     
@@ -119,26 +130,25 @@ def article():
     fail_count = len(external_URLs_failed)
     
     if fail_count>0: #Create session to request copy-and-paste of failed URLs
-        analytics.total_sessions+=1
         settings = (language,if_quote,
                     if_singular_proper_noun,
                     if_adjective,
                     if_noun,
                     if_cardinal_number
                     )
-        session_elem = (str(urandom(24)),
-                        filtered_name,
+        session_ID = str(urandom(24))
+        session_elem = (filtered_name,
                         data,
                         text_quotes,
                         settings,
                         datetime.now()
                         )
-        session.sessions.append(session_elem)
+        session[session_ID] = session_elem
         return render_template("article_errors.html",
                                text=html_output,
                                page=filtered_name,
                                language=language,
-                               session_ID=session_elem[0],
+                               session_ID=session_ID,
                                error_count=fail_count,
                                URLs_failed=external_URLs_failed
                                )
@@ -148,7 +158,7 @@ def article():
                                error_message = "The article does not exist (title is case-sensitive), or another error occurred.")
     elif(html_output=="_ERROR: too many external_URLs_"): 
         max_URL = str(__metadata__.__WEB_EXTERNAL_URL_LIMIT__)
-        error_message = "There are too many citations in the article (over "+max_URL+"). Note: this limit does not apply with the desktop program."
+        error_message = "There are too many citations in the article for processing online (over "+max_URL+"). This limit does not apply with the desktop program."
         return render_template("index.html",
                                error_message = error_message)
     else: #Everything is fine
@@ -161,25 +171,6 @@ def article():
 def robots():
     """Allow the site to be indexed. Send_file delivers the exact .txt with formatting"""
     return send_file("templates/robots.txt")
-
-@app.route('/dashboard')
-def dashboard():
-    """Info about how the program is used, to help with optimisation"""
-    session.check_session_expiration()
-    return render_template("dashboard.html",
-                           retention_hours=analytics.RETENTION_HOURS,
-                           request_time=datetime.now(),
-                           submits = analytics.total_submits,
-                           hourly_submits=analytics.hourly_submits,
-                           session_count=len(session.sessions),
-                           session_retention=__metadata__.CORRECTION_RETENTION_TIME,
-                           total_sessions=analytics.total_sessions,
-                           unused_sessions=analytics.unused_sessions,
-                           total_used_session_time=analytics.total_used_session_time,
-                           total_urls = analytics.total_urls_requested,
-                           hours_since_restart = analytics.hours_since_init(),
-                           total_urls_failed = analytics.total_urls_failed
-                           )
 
 if __name__ == '__main__':
     """Start the server"""

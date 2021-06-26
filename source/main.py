@@ -4,7 +4,7 @@ __description__ = "Backend of verification tool"
 __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
-from source import article_standardise, programIO, text_tagging, web_scraper, __metadata__, analytics
+from source import article_standardise, programIO, text_tagging, web_scraper, __metadata__
 
 def main(article_title,language="en",
          if_ignore_URL_error = True,
@@ -35,8 +35,6 @@ def main(article_title,language="en",
         
         if __metadata__.__IF_WEB__ and len(external_URLs)>__metadata__.__WEB_EXTERNAL_URL_LIMIT__:
             return ("_ERROR: too many external_URLs_",[],[],[])
-        else:
-            analytics.total_urls_requested += len(external_URLs)
         
         unique_terms_citations_NNP = []
         unique_terms_citations_NN = []
@@ -108,6 +106,5 @@ def main(article_title,language="en",
 
     #Write html output as string:
     html_output = programIO.parse_HTML(data)
-    analytics.total_urls_failed += len(external_URLs_failed)
     output = (html_output, external_URLs_failed, data, text_quotes)
     return output

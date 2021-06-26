@@ -50,7 +50,7 @@
 		{{URLs_failed}}<br>
 		Copy-and-paste relevant text from these URLs, then submit:
 		<textarea maxlength="400000" id="correction_text" name="correction_text" rows="5" style="width: 100%"> </textarea>
-		Session ID: <input class="col-7" type="text" id="session_ID" name="session_ID" readonly="readonly" value="{{session_ID}}"><br>
+		<input type="hidden" type="text" name="session_ID" readonly="readonly" value="{{session_ID}}"><br>
 		<button class="btn btn-primary" id="submitBox" onclick="this.disabled=true;document.getElementById('articleForm').submit();">Submit</button>
 		</div>
 		</form>

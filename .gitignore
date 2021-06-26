@@ -1,4 +1,4 @@
 *.bat
-# Ignore compiled Python files (.pyc)
 *.pyc
 __pycache__
+flask_session
