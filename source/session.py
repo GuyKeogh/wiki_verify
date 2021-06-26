@@ -16,5 +16,5 @@ def check_session_expiration():
         minutes_since_creation = (datetime.now() - session_creation_date).total_seconds() / 60.0
         if minutes_since_creation > __metadata__.CORRECTION_RETENTION_TIME:
             sessions.pop(0)
-            analytics.analytics_unused_sessions+=1 #Take note that the session wasn't put to use
+            analytics.unused_sessions+=1 #Take note that the session wasn't put to use
             check_session_expiration() #Keep looping until all expired sessions are deleted

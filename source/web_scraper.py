@@ -17,7 +17,7 @@ def download_article(article_title, language):
     'action': 'query',
     'titles': article_title,
     'format': 'json',
-    'prop': 'extracts',
+    'prop': 'extracts', #https://www.mediawiki.org/w/api.php?action=help&modules=query%2Bextracts
     'exsectionformat': 'plain',
     }
     ).json()
@@ -34,13 +34,18 @@ def download_article(article_title, language):
     return text
 def download_external_URLs(article_title, language):
     """Get list of every unique URL in the Wikipedia article"""
+    external_link_limit = 500
+    if __metadata__.__IF_WEB__==True:
+        external_link_limit = __metadata__.__WEB_EXTERNAL_URL_LIMIT__+1 #+1 so error can be reported if too many
+    
     response = requests.get(
     'https://'+language+'.wikipedia.org/w/api.php',
     params={
     'action': 'query',
     'titles': article_title,
     'format': 'json',
-    'prop': 'extlinks',
+    'prop': 'extlinks', #https://www.mediawiki.org/w/api.php?action=help&modules=query%2Bextlinks
+    'ellimit': str(external_link_limit),
     }
     ).json()
     page = next(iter(response['query']['pages'].values()))
@@ -73,8 +78,14 @@ def get_URL_text(URL,headers,if_ignore_URL_error=True):
         try:
             res.raise_for_status() #Fails if error occurs, which is caught as an exception
             html_page = res.content
+            
             parsed_html = BeautifulSoup(html_page,'html.parser')
-            plain_text = remove_junk(parsed_html.find_all(text=True))
+            plain_text = remove_junk(parsed_html.find_all(text=True)) #Best method of getting bare text
+            #plain_text = parsed_html.get_text() #Alternate method of getting bare text
+            
+            #Output text of every citation to file:
+            #print("\n\n\nURL: "+URL, file=open("output.txt", "a"))
+            #print(plain_text, file=open("output.txt", "a"))
             return plain_text
         except Exception as exc:
             if not if_ignore_URL_error:

@@ -35,7 +35,7 @@ def correct():
         (session_ID, article_title, data, text_quotes, settings, session_creation_date) = session.sessions[session_index]
         (language, if_detect_quote, if_detect_NNP, if_detect_JJ, if_detect_NN, if_detect_CD) = settings
         session.sessions.pop(session_index) #As the session was used, delete it
-        analytics.analytics_total_used_session_time += (datetime.now() - session_creation_date).total_seconds() / 60.0
+        analytics.total_used_session_time += (datetime.now() - session_creation_date).total_seconds() / 60.0
         
         #Feed back to a more streamlined function for the absolute final output:
         html_output = correction.correction(article_title,
@@ -61,7 +61,8 @@ def correct():
 def article():
     """Display the article, including calling the processing of it"""
     #Maintenance:
-    analytics.analytics_submits[analytics.analytics_hours_since_init()] += 1
+    analytics.hourly_submits[analytics.hours_since_init()] += 1
+    analytics.total_submits += 1
     session.check_session_expiration()
     
     #Getting from article:
@@ -117,8 +118,8 @@ def article():
     (html_output,external_URLs_failed,data,text_quotes) = output
     fail_count = len(external_URLs_failed)
     
-    if fail_count>0: #Create session
-        analytics.analytics_total_sessions+=1
+    if fail_count>0: #Create session to request copy-and-paste of failed URLs
+        analytics.total_sessions+=1
         settings = (language,if_quote,
                     if_singular_proper_noun,
                     if_adjective,
@@ -142,15 +143,19 @@ def article():
                                URLs_failed=external_URLs_failed
                                )
     #Using backend output, render HTML:
-    if(html_output!="500"):
-        analytics.analytics_successes[analytics.analytics_hours_since_init()] += 1
+    if(html_output=="500"): #Generic server error
+        return render_template("index.html",
+                               error_message = "The article does not exist (title is case-sensitive), or another error occurred.")
+    elif(html_output=="_ERROR: too many external_URLs_"): 
+        max_URL = str(__metadata__.__WEB_EXTERNAL_URL_LIMIT__)
+        error_message = "There are too many citations in the article (over "+max_URL+"). Note: this limit does not apply with the desktop program."
+        return render_template("index.html",
+                               error_message = error_message)
+    else: #Everything is fine
         return render_template("article.html",
                                text=html_output,
                                page=filtered_name,
                                language=language)
-    else: #Generic error
-        return render_template("index.html",
-                               error_message = "The article does not exist (title is case-sensitive), or another error occurred.")
 
 @app.route('/robots.txt')
 def robots():
@@ -162,17 +167,19 @@ def dashboard():
     """Info about how the program is used, to help with optimisation"""
     session.check_session_expiration()
     return render_template("dashboard.html",
-                           retention_hours=analytics.ANALYTICS_RETENTION_HOURS,
+                           retention_hours=analytics.RETENTION_HOURS,
                            request_time=datetime.now(),
-                           submits=analytics.analytics_submits,
-                           successes=analytics.analytics_successes,
+                           submits = analytics.total_submits,
+                           hourly_submits=analytics.hourly_submits,
                            session_count=len(session.sessions),
                            session_retention=__metadata__.CORRECTION_RETENTION_TIME,
-                           total_sessions=analytics.analytics_total_sessions,
-                           unused_sessions=analytics.analytics_unused_sessions,
-                           total_used_session_time=analytics.analytics_total_used_session_time
+                           total_sessions=analytics.total_sessions,
+                           unused_sessions=analytics.unused_sessions,
+                           total_used_session_time=analytics.total_used_session_time,
+                           total_urls = analytics.total_urls_requested,
+                           hours_since_restart = analytics.hours_since_init(),
+                           total_urls_failed = analytics.total_urls_failed
                            )
-
 
 if __name__ == '__main__':
     """Start the server"""

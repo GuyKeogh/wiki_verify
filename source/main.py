@@ -10,7 +10,7 @@ __description__ = "Backend of verification tool"
 __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
-from source import article_standardise, programIO, text_tagging, web_scraper
+from source import article_standardise, programIO, text_tagging, web_scraper, __metadata__, analytics
 
 def main(article_title,language="en",
          if_ignore_URL_error = True,
@@ -33,12 +33,18 @@ def main(article_title,language="en",
     if(if_detect_quote==False and if_detect_NNP==False and if_detect_JJ==False
        and if_detect_NN==False and if_detect_CD==False):
         if_evaluate_citations=False #If we're not doing anything with the citations, don't download or process them
-
+    
     #Handle citations:
     external_URLs_failed = []
     if if_evaluate_citations:
         external_URLs = web_scraper.download_external_URLs(article_title,language)
-
+        print(external_URLs, file=open("URLs.txt", "a"))
+        
+        if __metadata__.__IF_WEB__ == True and len(external_URLs)>__metadata__.__WEB_EXTERNAL_URL_LIMIT__:
+            return ("_ERROR: too many external_URLs_",[],[],[])
+        else:
+            analytics.total_urls_requested += len(external_URLs)
+        
         unique_terms_citations_NNP = []
         unique_terms_citations_NN = []
         unique_terms_citations_JJ = []
@@ -51,9 +57,18 @@ def main(article_title,language="en",
                                                                     article_title=article_title)
 
         for URL in external_URLs:
-            text = web_scraper.get_URL_text(URL,
-                                            citation_refferer_header,
-                                            if_ignore_URL_error)
+            if_get_URL_text = True
+            text = ""
+            for prohib_URL in __metadata__.__DO_NOT_SCRAPE_URLS__:
+                if(URL.find(prohib_URL)!=-1):
+                    if_get_URL_text = False
+                    text = "404"
+                    break #Don't try other URLs in list
+            
+            if if_get_URL_text==True:
+                text = web_scraper.get_URL_text(URL,
+                                                citation_refferer_header,
+                                                if_ignore_URL_error)
             if text != "404":
                 try: #Do the processing, which is a good enough delay before making another request.
                     (terms_citations_CD_to_append,
@@ -100,5 +115,6 @@ def main(article_title,language="en",
 
     #Write html output as string:
     html_output = programIO.parse_HTML(data)
+    analytics.total_urls_failed += len(external_URLs_failed)
     output = (html_output, external_URLs_failed, data, text_quotes)
     return output
