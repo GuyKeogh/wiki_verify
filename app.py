@@ -10,33 +10,15 @@ from flask import Flask, session, request, render_template, send_file
 from flask_session import Session
 from source import main, filter_title, __metadata__, correction
 
-"""
-app = Flask(__name__)
-app.config["SECRET_KEY"] = str(urandom(24));
-app.secret_key = app.config["SECRET_KEY"]
-app.config.update(SECRET_KEY=app.config["SECRET_KEY"])
-SESSION_TYPE = 'redis' #server-side session, as client-side has a limit of 4093 bytes, which is only good for stubs
-app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_REDIS'] = redis.from_url('redis://localhost:6379')
-
-"""
-
-# Create the Flask application
 app = Flask(__name__)
 
-# Details on the Secret Key: https://flask.palletsprojects.com/en/1.1.x/config/#SECRET_KEY
-# NOTE: The secret key is used to cryptographically-sign the cookies used for storing
-#       the session identifier.
-app.secret_key = 'BAD_SECRET_KEY'
-
-# Configure Redis for storing the session data on the server-side
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_PERMANENT'] = True
+#Session, so data can be held to allow corrections to be made:
+app.secret_key = str(urandom(24))
+app.config['SESSION_TYPE'] = 'filesystem' #Store on disk, rather than needing a seperate database or holding client-side (max 4093 bytes)
 app.config['SESSION_USE_SIGNER'] = True
-app.config['PERMANENT_SESSION_LIFETIME'] = 10
-app.config['SESSION_FILE_THRESHOLD'] = 2 #How many files under flask_session before it starts deleting oldest
-
+app.config['SESSION_PERMANENT'] = True #So thresholds can be used
+app.config['PERMANENT_SESSION_LIFETIME'] = __metadata__.CORRECTION_RETENTION_TIME*60
+app.config['SESSION_FILE_THRESHOLD'] = 100 #How many files under flask_session before it starts deleting oldest
 server_session = Session(app)
 
 @app.route('/')
@@ -158,7 +140,7 @@ def article():
                                error_message = "The article does not exist (title is case-sensitive), or another error occurred.")
     elif(html_output=="_ERROR: too many external_URLs_"): 
         max_URL = str(__metadata__.__WEB_EXTERNAL_URL_LIMIT__)
-        error_message = "There are too many citations in the article for processing online (over "+max_URL+"). This limit does not apply with the desktop program."
+        error_message = "There are too many citations in the article (over "+max_URL+"). Note: this limit does not apply with the desktop program."
         return render_template("index.html",
                                error_message = error_message)
     else: #Everything is fine
