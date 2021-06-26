@@ -1,4 +1,5 @@
 # Wikipedia article factchecker
+The tool can be accessed online at https://verify.toolforge.org/
 
 ## Introduction
 This is a Python application which uses a heuristic approach to assist in fact-checking Wikipedia articles by automating comparisons between the Wikipedia article text, and links and citations within that article. This can be hosted (locally by default), or used as a standalone Python application.
