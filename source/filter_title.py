@@ -5,6 +5,25 @@ __license__ = "BSD 2-Clause"
 """
 import re
 
+def handle_input_title_language(POST_name,language):
+    filtered_name = filter_title(POST_name) #Removes whitespace, etc
+    if_error = False
+    error = ""
+
+    #Filter bad inputs:
+    title_length = len(filtered_name)
+    if title_length>=256: #Article names must be less than 256 bytes
+        error="An article cannot have this title (too long)."
+    if title_length==0: #Nothing entered
+        error="No title entered."
+    if if_title_invalid_symbol_use(filtered_name): #Problematic symbol use
+        error="An article cannot have this title (invalid symbol use)."
+        
+    if language!="en" and language !="simple":
+        error = "Language not supported."
+    
+    return (filtered_name,if_error,error)
+
 def filter_title(badtitle):
     """Remove excess whitespaces"""
     output = re.sub("\s\s+" , " ", badtitle.strip())

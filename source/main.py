@@ -6,11 +6,9 @@ __license__ = "BSD 2-Clause"
 """
 from source import article_standardise, programIO, text_tagging, web_scraper, __metadata__
 
-def main(article_title,language="en",
-         if_ignore_URL_error = True,
-         if_detect_quote = True, if_detect_NNP = True, if_detect_JJ = False, if_detect_NN = False, if_detect_CD = True
-         ):
-
+def main(article_title, if_ignore_URL_error = True, settings = ("en", True, False, False, True, True)):
+    (language, if_detect_CD, if_detect_JJ, if_detect_NN, if_detect_NNP, if_detect_quote) = settings
+    
     try: #Download article
         original_text = web_scraper.download_article(article_title,language)
     except:
@@ -20,7 +18,6 @@ def main(article_title,language="en",
 
     text_quotes = text_tagging.tag_text_quotes(article_text)
     article_text = article_standardise.space_after_punctuation(article_text)
-
     data = text_tagging.tag_data(article_text)
 
     if_evaluate_citations=True
@@ -99,7 +96,6 @@ def main(article_title,language="en",
                                                if_detect_JJ=if_detect_JJ,
                                                if_detect_NN=if_detect_NN,
                                                if_detect_CD=if_detect_CD)
-
         #Compare quotes
         if if_detect_quote:
             data = text_tagging.detect_quotes_in_multiple_texts(data, citation_text, text_quotes)

@@ -6,17 +6,10 @@ __license__ = "BSD 2-Clause"
 
 from source import programIO, text_tagging
 
-def correction(article_title,
-               data,
-               input_text,text_quotes,
-               language="en",
-               if_detect_quote=False,
-               if_detect_NNP=False,
-               if_detect_JJ=False,
-               if_detect_NN=False,
-               if_detect_CD=False):
+def correction(article_title, data, input_text, text_quotes, settings = ("en", True, False, False, True, True)):
     """Takes the user-inputted citation text, processes it, and gives the final program output"""
-
+    (language, if_detect_CD, if_detect_JJ, if_detect_NN, if_detect_NNP, if_detect_quote) = settings
+    
     if input_text!="":
         (unique_terms_citations_CD,
          unique_terms_citations_JJ,

@@ -5,22 +5,6 @@ __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
 
-def load_file(file_name):
-    file = open(file_name, "rt")
-    read_text = file.read()
-    file.close()
-    return read_text
-
-def write_file(input_text,file_name):
-    file = open(file_name, "w")
-    file.write(input_text)
-    file.close()
-
-def append_to_file(input_text,file_name):
-    file = open(file_name, "a")
-    file.write(input_text)
-    file.close()
-
 def parse_HTML(data):  
     """Create the final HTML that's output to the user"""
 
