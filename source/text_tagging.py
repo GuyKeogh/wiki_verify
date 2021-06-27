@@ -124,7 +124,7 @@ def mark_present_quotes(data, quote, if_quote_in_citation):
     if_in_quote = False
     quote_list = word_tokenize(quote) #List of each word in quote
     #Find quote in data
-    for word in data:
+    for word in data: #find() won't work, as data is in a different format
         if not if_in_quote:
             if word[0]==quote_list[0]:
                 if_in_quote = True
@@ -132,7 +132,9 @@ def mark_present_quotes(data, quote, if_quote_in_citation):
         else: #If we seem to be in a quote, check it's still true
             if len(quote_list)==(index-quote_in_data_startword): #Detected a quote
                 for k in range(quote_in_data_startword, index, 1):
-                    if not if_quote_in_citation:
+                    #data[k][1] != ... comparisons prevent correction submission from being corrected as wrong, ...
+                    #... simply because text to back them up was not repeated in inputted text
+                    if not if_quote_in_citation and data[k][1] != 'quote' and data[k][1] != 'pass':
                         data[k][1] = 'quote'
                         data[k][2] = 'fail'
                     else:
