@@ -22,10 +22,13 @@ def handle_input_title_language(POST_name,language):
     title_length = len(filtered_name)
     if title_length>=256: #Article names must be less than 256 bytes
         error="An article cannot have this title (too long)."
+        if_error = True
     if title_length==0: #Nothing entered
         error="No title entered."
+        if_error = True
     if if_title_invalid_symbol_use(filtered_name): #Problematic symbol use
         error="An article cannot have this title (invalid symbol use)."
+        if_error = True
         
     if language!="en" and language !="simple":
         error = "Language not supported."
