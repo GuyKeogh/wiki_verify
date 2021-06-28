@@ -1,5 +1,5 @@
 """
-__description__ = "Filters user-inputted article titles for illegal characters"
+__description__ = "Filters user-inputted article titles"
 __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
@@ -7,7 +7,7 @@ import re
 
 def from_url(url):
     url = url.split("#", 1)[0] #Get rid of hashtag and text after it
-    title_language_only = url.replace(".wikipedia.org/wiki/", "]").replace("www.", "").replace("https://", "").replace("http://", "")
+    title_language_only = url.replace(".wikipedia.org/wiki/", "]").replace("https://", "").replace("www.", "").replace("http://", "")
     #URL now in format <language>]<title> . ] used as it won't interfere with valid symbols.
     title_language_tuple = title_language_only.partition("]") #Split into two based on ] symbol
         
