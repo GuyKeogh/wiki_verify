@@ -5,6 +5,14 @@ __license__ = "BSD 2-Clause"
 """
 import re
 
+def from_url(url):
+    url = url.split("#", 1)[0] #Get rid of hashtag and text after it
+    title_language_only = url.replace(".wikipedia.org/wiki/", "]").replace("www.", "").replace("https://", "").replace("http://", "")
+    #URL now in format <language>]<title> . ] used as it won't interfere with valid symbols.
+    title_language_tuple = title_language_only.partition("]") #Split into two based on ] symbol
+        
+    return (title_language_tuple[0], title_language_tuple[2])
+
 def handle_input_title_language(POST_name,language):
     filtered_name = filter_title(POST_name) #Removes whitespace, etc
     if_error = False

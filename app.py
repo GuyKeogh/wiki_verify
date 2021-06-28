@@ -107,15 +107,25 @@ def article():
                                text=html_output,
                                page=filtered_name,
                                language=language)
-@app.route('/article/<POST_name>')
+    
+
+#@app.route('/article/')
+@app.route('/article/<path:POST_name>')
 def article_named(POST_name):
+    """Alternate method of inputting title, allowing /article/<article name> and /article/<Wikipedia page URL>"""
+    #Defaults:
     language = "en"
+    if_noun = if_adjective = False
+    if_quote = if_cardinal_number = if_singular_proper_noun = True
+    
+    #/article/<Wikipedia page URL> :
+    if ".wikipedia.org/wiki/" in POST_name:
+        (language, POST_name) = filter_title.from_url(POST_name)
+    
     (filtered_name,if_error,error) = filter_title.handle_input_title_language(POST_name,language)
     if if_error:
         return render_template("index.html",error_message = error)
     
-    if_noun = if_adjective = False
-    if_quote = if_cardinal_number = if_singular_proper_noun = True
     settings = (language, if_cardinal_number, if_adjective, if_noun, if_singular_proper_noun, if_quote)
     #Finished checks
     #Submit to backend:
@@ -125,6 +135,7 @@ def article_named(POST_name):
     (html_output,external_URLs_failed,data,text_quotes) = output
     fail_count = len(external_URLs_failed)
     
+    filtered_name = filtered_name.replace("_"," ") #Remove possible _'s in title before showing on screen
     if fail_count>0: #Create session to request copy-and-paste of failed URLs
         session_ID = str(urandom(24))
         session_elem = (filtered_name,
