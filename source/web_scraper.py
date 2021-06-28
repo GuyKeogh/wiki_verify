@@ -19,7 +19,8 @@ def download_article(article_title, language):
     'format': 'json',
     'prop': 'extracts', #https://www.mediawiki.org/w/api.php?action=help&modules=query%2Bextracts
     'exsectionformat': 'plain',
-    }
+    },
+    headers = generate_api_header()
     ).json()
     page = next(iter(response['query']['pages'].values()))
     html_page = page['extract']
@@ -46,7 +47,8 @@ def download_external_URLs(article_title, language):
     'format': 'json',
     'prop': 'extlinks', #https://www.mediawiki.org/w/api.php?action=help&modules=query%2Bextlinks
     'ellimit': str(external_link_limit),
-    }
+    },
+    headers = generate_api_header()
     ).json()
     page = next(iter(response['query']['pages'].values()))
     extracted_page = page['extlinks']
@@ -59,14 +61,31 @@ def download_external_URLs(article_title, language):
 
     #Make sure all URLs unique, e.g. an external URL might be repeated twice, so don't download it twice
     return set(external_URLs)
-
+def generate_api_header():
+    """Creates the HTTP header which is sent when making Wikipedia API calls"""
+    if_from_web_text = "from web"
+    if not __metadata__.__IF_WEB__:
+        if_from_web_text = "from desktop" #If it's locally launched, mention that
+    
+    header = {
+        'User-Agent': 'wiki_verify/'+__metadata__.__VERSION__+"(https://verify.toolforge.org/) "+if_from_web_text,
+        'UPGRADE-INSECURE-REQUESTS': "1",
+        'Accept-Encoding': "gzip" #gzip preferred by API
+        }
+    return header
+    
 def generate_header(language="", article_title=""):
     """Creates the HTTP header which is sent when requesting citations"""
+    if_from_web_text = "from web"
+    if not __metadata__.__IF_WEB__:
+        if_from_web_text = "from desktop" #If it's locally launched, mention that
+    
     header = {
-        'User-Agent': 'wiki_verify/'+__metadata__.__VERSION__,
+        'User-Agent': 'wiki_verify/'+__metadata__.__VERSION__+"(https://verify.toolforge.org/) "+if_from_web_text,
         'Accept-Language': "en-US,en;q=0.5",
         'referer': "https://"+language+".wikipedia.org/"+article_title.replace(" ", "_"),
         'UPGRADE-INSECURE-REQUESTS': "1",
+        'Accept-Encoding': "deflate, gzip;q=1.0, *;q=0.5", #Automatically decompressed by requests
         'Save-Data': "on",
         }
     return header
