@@ -2,7 +2,7 @@
 The tool can be accessed online at https://verify.toolforge.org/
 
 ## Introduction
-This is a Python application which uses a heuristic approach to assist in fact-checking Wikipedia articles by automating comparisons between the Wikipedia article text, and links and citations within that article. This can be hosted (locally by default), or used as a standalone Python application.
+This is a Python application which uses a heuristic approach to assist in fact-checking Wikipedia articles by automating comparisons between the Wikipedia article text, and links and citations within that article. This can be used online, hosted (locally by default), or used as a standalone Python application.
 
 ### Methodology
 The application ensures proper nouns (explicitly named people/places/things) and numbers used in an article are present within any citation or external link within the page. This is easily doable as proper nouns and numbers cannot be modified much in language, a contrast to adjectives, verbs, etc, and so proper nouns and numbers can typically be directly compared for between different texts. This ensures the article matches the general information within the source text.
