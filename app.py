@@ -42,7 +42,7 @@ def correct():
                                page=title,
                                language=settings[0])
     except:
-        error_message = "The session has expired."
+        error_message = "The session has expired, please try again. You can use the back button in your browser to save your inputted text."
         return render_template("index.html", error_message=error_message)
 
 @app.route('/article', methods = ["POST"])
