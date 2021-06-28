@@ -16,6 +16,8 @@ app = Flask(__name__)
 #Session, so data can be held to allow corrections to be made:
 app.secret_key = __metadata__.__FLASK_SECRET__
 app.config['SESSION_TYPE'] = 'filesystem' #Store on disk, rather than needing a seperate database or holding client-side (max 4093 bytes)
+app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
+app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_PERMANENT'] = True #So thresholds can be used
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) #Sessions expire after 30 minutes
@@ -155,7 +157,7 @@ def article_named(POST_name):
     #Using backend output, render HTML:
     if(html_output=="500"): #Generic server error
         return render_template("index.html",
-                               error_message = "The article does not exist (title is case-sensitive), or another error occurred.")
+                               error_message = "The article does not exist (title is case-sensitive), or another error occurred downloading the article.")
     elif(html_output=="_ERROR: too many external_URLs_"): 
         max_URL = str(__metadata__.__WEB_EXTERNAL_URL_LIMIT__)
         error_message = "There are too many citations in the article (over "+max_URL+"). Note: this limit does not apply with the desktop program."
