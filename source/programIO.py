@@ -45,9 +45,9 @@ def parse_HTML(data):
                 combined = combined + "</p>"
                 if_paragraph_open = False
             elif word[2] == 'fail':
-                combined = combined + ''' <span title="'''+word[1]+'''" style="background-color: #ff6666">''' + article_word + "</span>"
+                combined = combined + ''' <span class="bad" title="'''+word[1]+'''" >''' + article_word + "</span>"
             elif word[2] == 'pass':
-                combined = combined + ''' <span title="'''+word[1]+'''" style="background-color: #66cc66">''' + article_word + "</span>"
+                combined = combined + ''' <span class="good" title="'''+word[1]+'''" >''' + article_word + "</span>"
             else:
                 combined = combined + " " + article_word
         else: #Punctuation, so no space needed.
