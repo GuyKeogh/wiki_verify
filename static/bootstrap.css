@@ -8,7 +8,7 @@
 /* Custom additions: */
 span.bad{
 	text-decoration: underline;
-	background-color: #ffb3b3;
+	background-color: yellow;
 }
 span.good{
 	background-color: #b3e6b3;
