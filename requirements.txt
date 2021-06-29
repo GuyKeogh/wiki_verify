@@ -1,7 +1,7 @@
 nltk
 requests
 beautifulsoup4
-webbrowser
 flask
 flask_session
 waitress
+webbrowser
