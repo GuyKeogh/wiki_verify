@@ -20,7 +20,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_PERMANENT'] = True #So thresholds can be used
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) #Sessions expire after 30 minutes
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1) #Sessions expire after 30 minutes
 app.config['SESSION_FILE_THRESHOLD'] = 100 #How many files under flask_session before it starts deleting oldest
 server_session = Session(app)
 
@@ -79,7 +79,6 @@ def article():
     fail_count = len(external_URLs_failed)
     
     if fail_count>0: #Create session to request copy-and-paste of failed URLs
-        
         session_ID = str(urandom(24))
         session_elem = (filtered_name,
                         data,
@@ -105,11 +104,11 @@ def article():
         return render_template("index.html",
                                error_message = error_message)
     else: #Everything is fine
+        session.clear()
         return render_template("article.html",
                                text=html_output,
                                page=filtered_name,
                                language=language)
-    
 
 #@app.route('/article/')
 @app.route('/article/<path:POST_name>')

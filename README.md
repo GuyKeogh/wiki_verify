@@ -15,7 +15,7 @@ Additionally, quotes (any text enclosed by single or double quotes) are checked 
 
 When in the directory the files have been saved:
 * Run 'pip3 install -r requirements.txt'
-* Run 'python', 'import nltk' and enter both 'nltk.download('punkt')' and 'nltk.download('averaged_perceptron_tagger')'
+* In your operating-system command line, run 'python', 'import nltk' and enter both 'nltk.download('punkt')' and 'nltk.download('averaged_perceptron_tagger')'
 * Run 'python app.py' to use the locally hosted web app, or 'python standalone.py' for the Python application
 * (WEB APP) Go to 'http://localhost:8080' in a browser on the same computer
 * Enter a valid Wikipedia article name and submit
@@ -24,7 +24,7 @@ When in the directory the files have been saved:
 
 When the above is followed after a few seconds a HTML page will open. With the web app a redirect will be made to the created page once it is generated, and with the standalone app a file 'article.html' will be generated in the same directory and opened in the default web browser.
 
-Text that needs to be checked is marked in red, while text that appears to be fine is marked in green. If there is no marking that text has not been checked. Marked text can be hovered over to see information about the text.
+Text that needs to be checked is highlighted in yellow and underlined, while text that appears to be fine is marked in green. These colours were chosen for colourblind-friendliness. If there is no marking that text has not been checked. Marked text can be hovered over to see information about the text.
 
 ## Current limitations
 * This is not definitive. It flags things that need double checking to make the fact-checking process easier.
