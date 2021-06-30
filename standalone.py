@@ -5,7 +5,7 @@ __license__ = "BSD 2-Clause"
 """
 
 import webbrowser
-from source import programIO, main, filter_title
+from source import main, filter_title
 
 def main_standalone():
     """Main function for standalone program"""
@@ -18,7 +18,20 @@ def main_standalone():
             (html_output,external_URLs_failed,data,text_quotes) = output
             #Process backend output:
             if html_output!="500":
-                programIO.write_file(html_output,"article.html")
+                #Start:
+                write_file("<!DOCTYPE html><html>","article.html")
+                #HTML head:
+                append_to_file("<head><meta charset='UTF-8'><link rel='stylesheet' type='text/css' href='static/bootstrap.css'></head>","article.html")
+                #HTML body:
+                append_to_file("<body>","article.html")
+                append_to_file("<center><h2>"+article_title+"</h2></center>","article.html")
+                append_to_file(html_output,"article.html")
+                append_to_file("</body>","article.html")
+                
+                #End:
+                append_to_file("</html>","article.html")
+                
+                #Open in default browser:
                 webbrowser.open("article.html")
             else:
                 print("The article does not exist, or another error occurred.")
@@ -54,5 +67,15 @@ def optional_input(text):
             return True
         else:
             print("\n Please type either Yes or No, not case-sensitive")
+
+def write_file(input_text,file_name):
+    file = open(file_name, "w")
+    file.write(input_text)
+    file.close()
+
+def append_to_file(input_text,file_name):
+    file = open(file_name, "a")
+    file.write(input_text)
+    file.close()
 
 main_standalone()
