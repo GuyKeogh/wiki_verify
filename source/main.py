@@ -19,17 +19,15 @@ def main(article_title, if_ignore_URL_error = True, settings = ("en", True, Fals
        and if_detect_NN==False and if_detect_CD==False):
         if_evaluate_citations=False #If we're not doing anything with the citations, don't download or process them
     
+    article_text = article_standardise.strip_end_sections(original_text)
+    text_quotes = text_tagging.tag_text_quotes(article_text)
+    article_text = article_standardise.space_after_punctuation(article_text)
+    data = text_tagging.tag_data(article_text)
+    
     #Handle citations. If citations are not evaluated essentially just output the article as it is on Wikipedia:
     external_URLs_failed = []
     if if_evaluate_citations:
-        #Tag article text now, as there's no point in doing this if we're not doing anything with it:
-        article_text = article_standardise.strip_end_sections(original_text)
-        text_quotes = text_tagging.tag_text_quotes(article_text)
-        article_text = article_standardise.space_after_punctuation(article_text)
-        data = text_tagging.tag_data(article_text)
-        
         external_URLs = web_scraper.download_external_URLs(article_title,language)
-        
         if __metadata__.__IF_WEB__ and len(external_URLs)>__metadata__.__WEB_EXTERNAL_URL_LIMIT__:
             return ("_ERROR: too many external_URLs_",[],[],[])
         
@@ -43,7 +41,6 @@ def main(article_title, if_ignore_URL_error = True, settings = ("en", True, Fals
         #Request header sent to citation server:
         citation_refferer_header = web_scraper.generate_header(language=language,
                                                                     article_title=article_title)
-
         for URL in external_URLs:
             if_get_URL_text = True
             text = ""
