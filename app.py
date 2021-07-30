@@ -103,6 +103,10 @@ def article():
         error_message = "There are too many citations in the article (over "+max_URL+"). Note: this limit does not apply with the desktop program."
         return render_template("index.html",
                                error_message = error_message)
+    elif(html_output=="_ERROR: problem getting external_URLs_"): 
+        error_message = "A problem occurred grabbing the citations from Wikipedia, please try again. This error has been recorded."
+        return render_template("index.html",
+                               error_message = error_message)
     else: #Everything is fine
         session.clear()
         return render_template("article.html",

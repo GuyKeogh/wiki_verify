@@ -29,7 +29,12 @@ def main(article_title, if_ignore_URL_error = True, settings = ("en", True, Fals
     if if_evaluate_citations:
         external_URLs = web_scraper.download_external_URLs(article_title,language)
         if __metadata__.__IF_WEB__ and len(external_URLs)>__metadata__.__WEB_EXTERNAL_URL_LIMIT__:
+            programIO.record_error(article_title, "_ERROR: too many external_URLs_")
             return ("_ERROR: too many external_URLs_",[],[],[])
+        elif len(external_URLs) == 1:
+            if external_URLs[0] == "_ERROR: problem getting external_URLs_":
+                programIO.record_error(article_title, external_URLs[0])
+                return (external_URLs[0],[],[],[])
         
         unique_terms_citations_NNP = []
         unique_terms_citations_NN = []

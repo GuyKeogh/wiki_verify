@@ -38,26 +38,29 @@ def download_external_URLs(article_title, language):
     external_link_limit = 500
     if __metadata__.__IF_WEB__:
         external_link_limit = __metadata__.__WEB_EXTERNAL_URL_LIMIT__+1 #+1 so error can be reported if too many
-
-    response = requests.get(
-    'https://'+language+'.wikipedia.org/w/api.php',
-    params={
-    'action': 'query',
-    'titles': article_title,
-    'format': 'json',
-    'prop': 'extlinks', #https://www.mediawiki.org/w/api.php?action=help&modules=query%2Bextlinks
-    'ellimit': str(external_link_limit),
-    },
-    headers = generate_api_header()
-    ).json()
-    page = next(iter(response['query']['pages'].values()))
-    extracted_page = page['extlinks']
-    
-    #Access the created dictionary of URLs and output a single list
+        
     external_URLs = []
-    for element in extracted_page:
-        for key, value in element.items():
-            external_URLs.append(value)
+    try:
+        response = requests.get(
+        'https://'+language+'.wikipedia.org/w/api.php',
+        params={
+        'action': 'query',
+        'titles': article_title,
+        'format': 'json',
+        'prop': 'extlinks', #https://www.mediawiki.org/w/api.php?action=help&modules=query%2Bextlinks
+        'ellimit': str(external_link_limit),
+        },
+        headers = generate_api_header()
+        ).json()
+        page = next(iter(response['query']['pages'].values()))
+        extracted_page = page['extlinks']
+        
+        #Access the created dictionary of URLs and output a single list
+        for element in extracted_page:
+            for key, value in element.items():
+                external_URLs.append(value)
+    except:
+        return ["_ERROR: problem getting external_URLs_"]
 
     #Make sure all URLs unique, e.g. an external URL might be repeated twice, so don't download it twice
     return set(external_URLs)
