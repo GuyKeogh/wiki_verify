@@ -20,7 +20,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_PERMANENT'] = True #So thresholds can be used
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1) #Sessions expire after 30 minutes
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1) #Sessions expire after 1 hour
 app.config['SESSION_FILE_THRESHOLD'] = 100 #How many files under flask_session before it starts deleting oldest
 server_session = Session(app)
 
@@ -163,7 +163,7 @@ def article_named(POST_name):
                                error_message = "The article does not exist (title is case-sensitive), or another error occurred downloading the article.")
     elif(html_output=="_ERROR: too many external_URLs_"): 
         max_URL = str(__metadata__.__WEB_EXTERNAL_URL_LIMIT__)
-        error_message = "There are too many citations in the article (over "+max_URL+"). Note: this limit does not apply with the desktop program."
+        error_message = "There are too many external links in the article (over "+max_URL+"). Note: this limit does not apply with the desktop program."
         return render_template("index.html",
                                error_message = error_message)
     else: #Everything is fine
