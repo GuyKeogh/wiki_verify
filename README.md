@@ -10,10 +10,11 @@ The application ensures proper nouns (explicitly named people/places/things) and
 Additionally, quotes (any text enclosed by single or double quotes) are checked to see if they are present in any citation or external link.
 
 ## To run:
+* Download and unzip the latest release: https://github.com/GuyKeogh/wiki_verify/releases/
 * Have Python 3 installed
 * (OPTIONAL, but recommended) Install and use a virtualenv (not included)
 
-When in the directory the files have been saved:
+From the command line, when in the directory the files have been saved:
 * Run 'pip3 install -r requirements.txt'
 * In your operating-system command line, run 'python', 'import nltk' and enter both 'nltk.download('punkt')' and 'nltk.download('averaged_perceptron_tagger')'
 * Run 'python app.py' to use the locally hosted web app, or 'python standalone.py' for the Python application
