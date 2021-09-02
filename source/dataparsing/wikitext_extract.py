@@ -10,6 +10,12 @@ def count_newlines_before_position(newline_indexes, start_position):
         if index > start_position:
             return index_count
         index_count+=1
+    return 0
+
+def strip_templates(wikitext):
+    import re
+    template_re = r'{([^"]*)}' #{ } and all text in it
+    return re.sub(template_re, "", wikitext)
 
 def extract_citation_info(external_URLs, wikitext):
     import re

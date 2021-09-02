@@ -7,7 +7,61 @@ __license__ = "BSD 2-Clause"
 import re
 import requests
 from bs4 import BeautifulSoup
-from source import __metadata__
+#from source import __metadata__
+import __metadata__
+
+def generate_api_header():
+    """Creates the HTTP header which is sent when making Wikipedia API calls"""
+    if_from_web_text = "from web"
+    if not __metadata__.__IF_WEB__:
+        if_from_web_text = "from desktop" #If it's locally launched, mention that
+    
+    header = {
+        'User-Agent': 'wiki_verify/'+__metadata__.__VERSION__+"(https://verify.toolforge.org/) "+if_from_web_text,
+        'UPGRADE-INSECURE-REQUESTS': "1",
+        'Accept-Encoding': "gzip" #gzip preferred by API
+        }
+    return header
+    
+def generate_header(language="", article_title=""):
+    """Creates the HTTP header which is sent when requesting citations"""
+    if_from_web_text = "from web"
+    if not __metadata__.__IF_WEB__:
+        if_from_web_text = "from desktop" #If it's locally launched, mention that
+    
+    header = {
+        'User-Agent': 'wiki_verify/'+__metadata__.__VERSION__+"(https://verify.toolforge.org/) "+if_from_web_text,
+        'Accept-Language': "en-US,en;q=0.5",
+        'referer': "https://"+language+".wikipedia.org/"+article_title.replace(" ", "_"),
+        'UPGRADE-INSECURE-REQUESTS': "1",
+        'Accept-Encoding': "deflate, gzip;q=1.0, *;q=0.5", #Automatically decompressed by requests
+        'Save-Data': "on",
+        }
+    return header
+
+def download_wikitext(article_title, language):
+    import re
+    response = requests.get(
+    'https://'+language+'.wikipedia.org/w/api.php',
+    params={
+    'action': 'query',
+    'titles': article_title,
+    'format': 'json',
+    'prop': 'revisions',
+    'rvprop': 'content',
+    'rvslots': 'main',
+    },
+    headers = generate_api_header()
+    ).json()
+
+    #Get the wikitext from the dictionary:
+    wikitext = next(iter(response['query']['pages'].values()))
+    wikitext = wikitext['revisions']
+    wikitext = wikitext[0]['slots']
+    wikitext = wikitext['main']
+    wikitext = wikitext['*']
+
+    return wikitext
 
 def download_article(article_title, language):
     """Download the Wikipedia article text and mark safe HTML elements with codes so they remain the same"""
@@ -33,6 +87,7 @@ def download_article(article_title, language):
     text = parsed_html.get_text()
 
     return text
+
 def download_external_URLs(article_title, language):
     """Get list of every unique URL in the Wikipedia article"""
     external_link_limit = 500
@@ -64,34 +119,6 @@ def download_external_URLs(article_title, language):
 
     #Make sure all URLs unique, e.g. an external URL might be repeated twice, so don't download it twice
     return set(external_URLs)
-def generate_api_header():
-    """Creates the HTTP header which is sent when making Wikipedia API calls"""
-    if_from_web_text = "from web"
-    if not __metadata__.__IF_WEB__:
-        if_from_web_text = "from desktop" #If it's locally launched, mention that
-    
-    header = {
-        'User-Agent': 'wiki_verify/'+__metadata__.__VERSION__+"(https://verify.toolforge.org/) "+if_from_web_text,
-        'UPGRADE-INSECURE-REQUESTS': "1",
-        'Accept-Encoding': "gzip" #gzip preferred by API
-        }
-    return header
-    
-def generate_header(language="", article_title=""):
-    """Creates the HTTP header which is sent when requesting citations"""
-    if_from_web_text = "from web"
-    if not __metadata__.__IF_WEB__:
-        if_from_web_text = "from desktop" #If it's locally launched, mention that
-    
-    header = {
-        'User-Agent': 'wiki_verify/'+__metadata__.__VERSION__+"(https://verify.toolforge.org/) "+if_from_web_text,
-        'Accept-Language': "en-US,en;q=0.5",
-        'referer': "https://"+language+".wikipedia.org/"+article_title.replace(" ", "_"),
-        'UPGRADE-INSECURE-REQUESTS': "1",
-        'Accept-Encoding': "deflate, gzip;q=1.0, *;q=0.5", #Automatically decompressed by requests
-        'Save-Data': "on",
-        }
-    return header
 
 def get_URL_text(URL,headers,if_ignore_URL_error=True):
     """Get the HTML from the page, strip the tags, and output the bare text"""
