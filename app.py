@@ -74,43 +74,54 @@ def article():
 
     #Finished checks
     #Submit to backend:
-    output = main.main(article_title=filtered_name,if_ignore_URL_error=True,settings=settings)
-    (html_output,external_URLs_failed,data,text_quotes) = output
-    fail_count = len(external_URLs_failed)
+    data = { #No data yet
+            "segment": 0,
+            "segment_last": 0,
+            "external_URLs": [],
+            "text_segments": [],
+            "citation_data": [],
+            "processed_citations": dict(),
+    }
+    data = main.main(filtered_name,data,settings=settings)
+
+    fail_count = 0
+    #fail_count = len(external_URLs_failed)
     
     if fail_count>0: #Create session to request copy-and-paste of failed URLs
         session_ID = str(urandom(24))
-        session_elem = (filtered_name,
-                        data,
-                        text_quotes,
-                        settings
-                        )
+        session_elem = {
+            "filtered_name": filtered_name,
+            "data": data,
+            "settings": settings,
+
+        }
         session[session_ID] = session_elem
         return render_template("article_errors.html",
-                               text=html_output,
+                               text=data['HTML_out'],
                                page=filtered_name,
                                language=language,
                                session_ID=session_ID,
                                error_count=fail_count,
-                               URLs_failed=external_URLs_failed
+                               #URLs_failed=external_URLs_failed
                                )
     #Using backend output, render HTML:
-    if(html_output=="500"): #Generic server error
+    if(data['HTML_out']=="500"): #Generic server error
         return render_template("index.html",
                                error_message = "The article does not exist (title is case-sensitive), or another error occurred.")
-    elif(html_output=="_ERROR: too many external_URLs_"): 
+    elif(data['HTML_out']=="_ERROR: too many external_URLs_"): 
         max_URL = str(__metadata__.__WEB_EXTERNAL_URL_LIMIT__)
         error_message = "There are too many citations in the article (over "+max_URL+"). Note: this limit does not apply with the desktop program."
         return render_template("index.html",
                                error_message = error_message)
-    elif(html_output=="_ERROR: problem getting external_URLs_"): 
+    elif(data['HTML_out']=="_ERROR: problem getting external_URLs_"): 
         error_message = "A problem occurred grabbing the citations from Wikipedia, please try again. This error has been recorded."
         return render_template("index.html",
                                error_message = error_message)
     else: #Everything is fine
-        session.clear()
+        #session.clear()
         return render_template("article.html",
-                               text=html_output,
+                               text=data['HTML_out'],
+                               debug=data,
                                page=filtered_name,
                                language=language)
 

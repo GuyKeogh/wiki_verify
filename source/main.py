@@ -5,8 +5,8 @@ __description__ = "Backend of verification tool"
 __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
-import article_standardise, programIO, text_tagging, web_scraper, __metadata__
-from dataparsing import wikitext_extract
+from source import article_standardise, programIO, text_tagging, web_scraper, __metadata__
+from source.dataparsing import wikitext_extract
 
 def main(article_title, data, settings = ("en", True, False, False, True, True)):
     #Intialise:
@@ -48,7 +48,6 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
             #Using wikitext and external links, get more data about the citations:
             citation_data = wikitext_extract.extract_citation_info(external_URLs, wikitext)
         except:
-            print("Generic error downloading article and citations")
             data["HTML_out"] = "500"
             return data
         
@@ -82,10 +81,8 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
         #Process info for every segment that's needed:
         for wiki_part in text_segments:
             if wiki_part[0] > segment_last and wiki_part[1] <= segment:
-                #print(str(wiki_part[0]) + " has citations: " + str(wiki_part[3]))
                 for cite in wiki_part[3]:
                     if not cite in processed_citations:
-                        #print(cite + " needs to be processed!")
                         citation_words = process_citation(cite, settings)
                         processed_citations.update({cite: citation_words})
         
@@ -96,8 +93,6 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
                 for cite_URL in wiki_part[3]:
                     if cite_URL in processed_citations:
                         cite_words = processed_citations[cite_URL]
-                        
-                        #print(cite_words)
 
                         if cite_words['text'] == '404':
                             continue
@@ -117,14 +112,8 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
                 processed_tags = processed_tags + tags
                 tags = []
     
-    #print("##################")
-    #print(processed_citations)
-    #print("##################")
-    
     #We've done everything we need; produce output:
-    print(processed_tags)
     HTML_out = programIO.parse_HTML(processed_tags)
-    print(HTML_out)
     segment_last = segment
     data = {
         "segment": segment,
@@ -167,27 +156,3 @@ def process_citation(cite_URL, settings):
         citation_words['text'] = text
 
     return citation_words
-
-settings = ("en", True, False, False, True, True)
-article_title = input("Enter article title: ")
-
-data = {
-        "segment": 0,
-        "segment_last": 0,
-        "external_URLs": [],
-        "text_segments": [],
-        "citation_data": [],
-        "processed_citations": dict(),
-}
-output = main(article_title, data, settings)
-
-#print(output["HTML_out"])
-#print(output["text_segments"])
-
-#print("###############################################")
-
-#print(output)
-output["segment"] = 4000
-
-output_2 = main(article_title, output, settings)
-#print(output_2["HTML_out"])

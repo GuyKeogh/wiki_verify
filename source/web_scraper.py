@@ -7,8 +7,7 @@ __license__ = "BSD 2-Clause"
 import re
 import requests
 from bs4 import BeautifulSoup
-#from source import __metadata__
-import __metadata__
+from source import __metadata__
 
 def generate_api_header():
     """Creates the HTTP header which is sent when making Wikipedia API calls"""
