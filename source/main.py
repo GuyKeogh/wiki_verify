@@ -9,9 +9,14 @@ import article_standardise, programIO, text_tagging, web_scraper, __metadata__
 from dataparsing import wikitext_extract
 
 def main(article_title, data, settings = ("en", True, False, False, True, True)):
-
     #Intialise:
-    (segment, segment_last, external_URLs, text_segments, citation_data, citation_text) = data
+
+    segment = data['segment']
+    segment_last = data['segment_last']
+    external_URLs = data['external_URLs']
+    text_segments = data['text_segments']
+    citation_data = data['citation_data']
+    processed_citations = data['processed_citations']
     (language, if_detect_CD, if_detect_JJ, if_detect_NN, if_detect_NNP, if_detect_quote) = settings
     
     external_URLs_failed = []
@@ -64,7 +69,7 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
                     relevant_citations.append(external_URL)
             
             #Find the relevant text covering that segment:
-            text_segments.append(tuple((position, wikitext[position:position_end], relevant_citations)))
+            text_segments.append(tuple((position, position_end, wikitext[position:position_end], relevant_citations)))
             newline_index+=1
 
         HTML_out = "Working..."
@@ -73,8 +78,9 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
         #Process info for every segment that's needed:
         for part in text_segments:
             if part[0] > segment_last and part[1] <= segment:
-                HTML_out = part[1] + " has citations: " + part[2]
+                print(str(part[0]) + " has citations: " + str(part[3]))
     
+    #We've done everything we need; produce output:
     segment_last = segment
     output = {
         "segment": segment,
@@ -82,12 +88,30 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
         "external_URLs": external_URLs,
         "text_segments": text_segments,
         "citation_data": citation_data,
-        "citation_text": citation_text,
+        "processed_citations": processed_citations,
         "HTML_out": HTML_out
     }
     return output
 
 settings = ("en", True, False, False, True, True)
 article_title = input("Enter article name")
-data = (0, 0, [], [], [], [])
-print(main(article_title, data, )["HTML_out"])
+
+data = {
+        "segment": 0,
+        "segment_last": 0,
+        "external_URLs": [],
+        "text_segments": [],
+        "citation_data": [],
+        "processed_citations": [],
+}
+output = main(article_title, data, settings)
+
+#print(output["HTML_out"])
+#print(output["text_segments"])
+
+#print("###############################################")
+
+output["segment"] = 4000
+
+output_2 = main(article_title, output, settings)
+print(output_2["HTML_out"])
