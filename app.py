@@ -50,10 +50,10 @@ def article_dynamic():
     filtered_name = session['filtered_name']
     data = session['data']
     settings = session['settings']
-    language = settings[0]
+    language = settings['language']
 
     data['segment']+=1000
-    data = main.main(filtered_name,data,settings=settings)
+    data = main.main(filtered_name,data,settings)
 
     return render_template("article.html",
                                text=data['HTML_out'],
@@ -86,7 +86,14 @@ def article():
             if_noun = True
         if request.form.get("JJ_check"):
             if_adjective = True
-    settings = (language, if_cardinal_number, if_adjective, if_noun, if_singular_proper_noun, if_quote)
+    settings = {
+        "language": language,
+        "quote?": if_quote,
+        "CD?": if_cardinal_number,
+        "NNP?": if_singular_proper_noun,
+        "NN?": if_noun,
+        "JJ?": if_adjective
+    }
 
     #Finished checks
     #Submit to backend:
@@ -96,9 +103,10 @@ def article():
             "external_URLs": [],
             "text_segments": [],
             "citation_data": [],
+            "processed_tags": [],
             "processed_citations": dict(),
     }
-    data = main.main(filtered_name,data,settings=settings)
+    data = main.main(filtered_name,data,settings)
     session['filtered_name'] = filtered_name
     session['data'] = data
     session['settings'] = settings

@@ -8,24 +8,23 @@ __license__ = "BSD 2-Clause"
 from source import article_standardise, programIO, text_tagging, web_scraper, __metadata__
 from source.dataparsing import wikitext_extract
 
-def main(article_title, data, settings = ("en", True, False, False, True, True)):
+def main(article_title, data, settings):
     #Intialise:
     tags = []
-    processed_tags = []
+    processed_tags = data['processed_tags']
     segment = data['segment']
     segment_last = data['segment_last']
     external_URLs = data['external_URLs']
     text_segments = data['text_segments']
     citation_data = data['citation_data']
     processed_citations = data['processed_citations']
-    (language, if_detect_CD, if_detect_JJ, if_detect_NN, if_detect_NNP, if_detect_quote) = settings
     
     external_URLs_failed = []
     HTML_out = "blank"
 
     if_evaluate_citations=True
-    if(if_detect_quote==False and if_detect_NNP==False and if_detect_JJ==False
-       and if_detect_NN==False and if_detect_CD==False):
+    if(settings['quote?']==False and settings['NNP?']==False and settings['JJ?']==False
+       and settings['NN?']==False and settings['CD?']==False):
         if_evaluate_citations=False
     #End of initialise
     
@@ -33,7 +32,7 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
     if segment == 0: #First run, so needed data isn't yet stored; get that data.
         try: #Download list of external links (future update: get it all from wikitext)
             if if_evaluate_citations:
-                external_URLs = web_scraper.download_external_URLs(article_title,language)
+                external_URLs = web_scraper.download_external_URLs(article_title,settings['language'])
                 if len(external_URLs) == 1 and external_URLs[0] == "_ERROR: problem getting external_URLs_":
                     programIO.record_error(article_title, external_URLs[0])
                     return (external_URLs[0],[],[],[])
@@ -43,7 +42,7 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
             return (error_msg,[],[],[])
 
         try: #Download article
-            wikitext = web_scraper.download_wikitext(article_title,language)
+            wikitext = web_scraper.download_wikitext(article_title,settings['language'])
             #Using wikitext and external links, get more data about the citations:
             citation_data = wikitext_extract.extract_citation_info(external_URLs, wikitext)
         except:
@@ -95,18 +94,18 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
 
                         if cite_words['text'] == '404':
                             continue
-                        tags = text_tagging.compare_citation_and_text_terms(data,
+                        tags = text_tagging.compare_citation_and_text_terms(tags,
                                                         cite_words['CD'],
                                                         cite_words['JJ'],
                                                         cite_words['NN'],
                                                         cite_words['NNP'],
-                                                        if_detect_NNP=if_detect_NNP,
-                                                        if_detect_JJ=if_detect_JJ,
-                                                        if_detect_NN=if_detect_NN,
-                                                        if_detect_CD=if_detect_CD)
-                        if if_detect_quote:
+                                                        if_detect_NNP=settings['NNP?'],
+                                                        if_detect_JJ=settings['JJ?'],
+                                                        if_detect_NN=settings['NN?'],
+                                                        if_detect_CD=settings['CD?'])
+                        if settings['quote?']:
                             compiled_cite_text = compiled_cite_text + cite_words['text']
-                if if_detect_quote:
+                if settings['quote?']:
                     tags = text_tagging.detect_quotes_in_multiple_texts(tags, compiled_cite_text, text_quotes)
                 processed_tags = processed_tags + tags
                 tags = []
@@ -116,6 +115,7 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
     segment_last = segment
     data = {
         "segment": segment,
+        "processed_tags": processed_tags,
         "segment_last": segment_last,
         "external_URLs": external_URLs,
         "text_segments": text_segments,
@@ -139,10 +139,10 @@ def process_citation(cite_URL, settings):
             citation_words['text'] = "404"
             return citation_words
     
-    header = web_scraper.generate_header(settings[0])
+    header = web_scraper.generate_header(settings['language'])
     text = web_scraper.get_URL_text(cite_URL, header)
 
-    if text != "404":
+    if text != "404" and text:
         (terms_citations_CD,
             terms_citations_JJ,
             terms_citations_NN,

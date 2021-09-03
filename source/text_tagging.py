@@ -85,7 +85,7 @@ def get_citation_unique_terms(text, settings):
             unique_terms_citations_NN,
             unique_terms_citations_NNP)
 
-def compare_citation_and_text_terms(data,
+def compare_citation_and_text_terms(tags,
                                     unique_terms_citations_CD,
                                     unique_terms_citations_JJ,
                                     unique_terms_citations_NN,
@@ -100,18 +100,18 @@ def compare_citation_and_text_terms(data,
     text_NNP = []
     text_CD = []
     if if_detect_JJ:
-        text_JJ = tag_text_of_type("JJ", data)
-        data = tag_comparisons(text_JJ, unique_terms_citations_JJ, data)
+        text_JJ = tag_text_of_type("JJ", tags)
+        tags = tag_comparisons(text_JJ, unique_terms_citations_JJ, tags)
     if if_detect_NNP:
-        text_NNP = tag_text_of_type("NNP", data)
-        data = tag_comparisons(text_NNP, unique_terms_citations_NNP, data)
+        text_NNP = tag_text_of_type("NNP", tags)
+        tags = tag_comparisons(text_NNP, unique_terms_citations_NNP, tags)
     if if_detect_NN:
-        text_NN = tag_text_of_type("NN", data)
-        data = tag_comparisons(text_NN, unique_terms_citations_NN, data)
+        text_NN = tag_text_of_type("NN", tags)
+        tags = tag_comparisons(text_NN, unique_terms_citations_NN, tags)
     if if_detect_CD:
-        text_CD = tag_text_of_type("CD", data)
-        data = tag_comparisons(text_CD, unique_terms_citations_CD, data)
-    return data
+        text_CD = tag_text_of_type("CD", tags)
+        tags = tag_comparisons(text_CD, unique_terms_citations_CD, tags)
+    return tags
 
 def mark_present_quotes(data, quote, if_quote_in_citation):
     """With a citation and a text, marks if it's in that text"""
