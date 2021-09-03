@@ -22,8 +22,18 @@
 		<center><h2>{{page}}</h2></center>
 		{{text | safe}}
 		<br>
+		<center>
+		<form class="inline-form" action="/article_dynamic" method="POST" id="articleForm">
+			<button class="btn btn-primary" id="submitBox" onclick="this.disabled=true;document.getElementById('articleForm').submit();">Next paragraph</button>
+		</form>
+		
+		</div>
+		</form>
+		</center>
+		<br>
 		<center><h4>Debug info</h4></center>
 		{{debug}}
+		<br>
 	</body>
 
 	<footer class="footer">

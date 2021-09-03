@@ -23,8 +23,7 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
     external_URLs_failed = []
     HTML_out = "blank"
 
-    if_evaluate_citations=False
-    #if_evaluate_citations=True
+    if_evaluate_citations=True
     if(if_detect_quote==False and if_detect_NNP==False and if_detect_JJ==False
        and if_detect_NN==False and if_detect_CD==False):
         if_evaluate_citations=False

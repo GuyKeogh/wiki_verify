@@ -45,6 +45,22 @@ def correct():
         error_message = "The session has expired, please try again. You can use the back button in your browser to access your inputted text."
         return render_template("index.html", error_message=error_message)
 
+@app.route('/article_dynamic', methods = ["POST"])
+def article_dynamic():
+    filtered_name = session['filtered_name']
+    data = session['data']
+    settings = session['settings']
+    language = settings[0]
+
+    data['segment']+=1000
+    data = main.main(filtered_name,data,settings=settings)
+
+    return render_template("article.html",
+                               text=data['HTML_out'],
+                               debug=data,
+                               page=filtered_name,
+                               language=language)
+
 @app.route('/article', methods = ["POST"])
 def article():
     """Display the article, including calling the processing of it"""
@@ -83,24 +99,18 @@ def article():
             "processed_citations": dict(),
     }
     data = main.main(filtered_name,data,settings=settings)
+    session['filtered_name'] = filtered_name
+    session['data'] = data
+    session['settings'] = settings
 
     fail_count = 0
     #fail_count = len(external_URLs_failed)
     
     if fail_count>0: #Create session to request copy-and-paste of failed URLs
-        session_ID = str(urandom(24))
-        session_elem = {
-            "filtered_name": filtered_name,
-            "data": data,
-            "settings": settings,
-
-        }
-        session[session_ID] = session_elem
         return render_template("article_errors.html",
                                text=data['HTML_out'],
                                page=filtered_name,
                                language=language,
-                               session_ID=session_ID,
                                error_count=fail_count,
                                #URLs_failed=external_URLs_failed
                                )
@@ -118,14 +128,12 @@ def article():
         return render_template("index.html",
                                error_message = error_message)
     else: #Everything is fine
-        #session.clear()
         return render_template("article.html",
                                text=data['HTML_out'],
                                debug=data,
                                page=filtered_name,
                                language=language)
 
-#@app.route('/article/')
 @app.route('/article/<path:POST_name>')
 def article_named(POST_name):
     """Alternate method of inputting title, allowing /article/<article name> and /article/<Wikipedia page URL>"""
@@ -152,19 +160,16 @@ def article_named(POST_name):
     fail_count = len(external_URLs_failed)
     
     filtered_name = filtered_name.replace("_"," ") #Remove possible _'s in title before showing on screen
+
+    session['filtered_name'] = filtered_name
+    session['data'] = data
+    session['settings'] = settings
+
     if fail_count>0: #Create session to request copy-and-paste of failed URLs
-        session_ID = str(urandom(24))
-        session_elem = (filtered_name,
-                        data,
-                        text_quotes,
-                        settings
-                        )
-        session[session_ID] = session_elem
         return render_template("article_errors.html",
                                text=html_output,
                                page=filtered_name,
                                language=language,
-                               session_ID=session_ID,
                                error_count=fail_count,
                                URLs_failed=external_URLs_failed
                                )
