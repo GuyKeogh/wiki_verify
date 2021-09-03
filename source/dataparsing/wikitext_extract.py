@@ -14,10 +14,20 @@ def count_newlines_before_position(newline_indexes, start_position):
 
 def strip_templates(wikitext):
     import re
-    template_re = r'{([^"]*)}' #{ } and all text in it
-    return re.sub(template_re, "", wikitext)
+    template_re = r'{([^"]*)}' #Remove { } and all text in them
+    wikitext = re.sub(template_re, "", wikitext)
+
+    template_re = r'{{([^"]*)}}' #Remove {{ }} and all text in them
+    wikitext = re.sub(template_re, "", wikitext)
+
+    wikitext.replace("<ref>", "").replace("</ref>", "") #Remove ref tags too
+
+    return wikitext
 
 def extract_citation_info(external_URLs, wikitext):
+    if not external_URLs:
+        return []
+
     import re
 
     newline_indexes = [m.start() for m in re.finditer('\n', wikitext)] #Get position of every \n in the text, as these are useful reference points
@@ -32,23 +42,17 @@ def extract_citation_info(external_URLs, wikitext):
     #Check which external_URL falls between the reference start and ends:
     index = 0
     for reference in reference_starts:
-        #print("----------------------------------------")
         start_position = reference_starts[index]
         end_position = reference_ends[index]
-        #print(tuple((start_position,end_position)))
         citation_info = wikitext[start_position:end_position]
         external_URL = ""
         citation_group = ""
 
         double_quote_re = r'"([^"]*)"' #Regex pattern to get text between double quote
 
-        #print(citation_info)
-
         if_URL_found = False
         for URL in external_URLs:
             if citation_info.find(URL) != -1: #Check if a known external URL is between <ref> and </ref>
-                #print("Found %s in the citation template" % (URL,))
-
                 if_URL_found = True
                 external_URL = URL
 
@@ -82,9 +86,4 @@ def extract_citation_info(external_URLs, wikitext):
         updated_citation_tuple = (start, end, cite_URL, cite_index, cite_label)
         citations[index] = updated_citation_tuple
         index+=1
-
-    #print("\n###################################\n")
-    #print(label_dictionary)
-    #print("\n###################################\n")
-    #print(citations)
     return citations

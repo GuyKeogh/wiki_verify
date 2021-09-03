@@ -10,7 +10,8 @@ from dataparsing import wikitext_extract
 
 def main(article_title, data, settings = ("en", True, False, False, True, True)):
     #Intialise:
-
+    tags = []
+    processed_tags = []
     segment = data['segment']
     segment_last = data['segment_last']
     external_URLs = data['external_URLs']
@@ -22,7 +23,8 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
     external_URLs_failed = []
     HTML_out = "blank"
 
-    if_evaluate_citations=True
+    if_evaluate_citations=False
+    #if_evaluate_citations=True
     if(if_detect_quote==False and if_detect_NNP==False and if_detect_JJ==False
        and if_detect_NN==False and if_detect_CD==False):
         if_evaluate_citations=False
@@ -46,7 +48,9 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
             #Using wikitext and external links, get more data about the citations:
             citation_data = wikitext_extract.extract_citation_info(external_URLs, wikitext)
         except:
-            return ("500",[],[],[])
+            print("Generic error downloading article and citations")
+            data["HTML_out"] = "500"
+            return data
         
         #Split the article text based on its newlines (using these as segments):
         import re
@@ -68,21 +72,61 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
                 if start_pos >= position and end_pos <= position_end:
                     relevant_citations.append(external_URL)
             
-            #Find the relevant text covering that segment:
-            text_segments.append(tuple((position, position_end, wikitext[position:position_end], relevant_citations)))
+            #Find the relevant text covering that segment
+            plaintext = wikitext_extract.strip_templates(wikitext[position:position_end]) #Text covering the segment, stripped of refs and templates
+            text_segments.append(tuple((position, position_end, plaintext, relevant_citations)))
             newline_index+=1
 
         HTML_out = "Working..."
     else: #Session data is already saved, so just process what's needed
-        segments_needed = range(segment_last, segment)
         #Process info for every segment that's needed:
-        for part in text_segments:
-            if part[0] > segment_last and part[1] <= segment:
-                print(str(part[0]) + " has citations: " + str(part[3]))
+        for wiki_part in text_segments:
+            if wiki_part[0] > segment_last and wiki_part[1] <= segment:
+                #print(str(wiki_part[0]) + " has citations: " + str(wiki_part[3]))
+                for cite in wiki_part[3]:
+                    if not cite in processed_citations:
+                        #print(cite + " needs to be processed!")
+                        citation_words = process_citation(cite, settings)
+                        processed_citations.update({cite: citation_words})
+        
+                #Use relevant citations to verify section text:
+                tags = text_tagging.tag_data(wiki_part[2])
+                text_quotes = text_tagging.tag_text_quotes(wiki_part[2])
+                compiled_cite_text = ""
+                for cite_URL in wiki_part[3]:
+                    if cite_URL in processed_citations:
+                        cite_words = processed_citations[cite_URL]
+                        
+                        #print(cite_words)
+
+                        if cite_words['text'] == '404':
+                            continue
+                        tags = text_tagging.compare_citation_and_text_terms(data,
+                                                        cite_words['CD'],
+                                                        cite_words['JJ'],
+                                                        cite_words['NN'],
+                                                        cite_words['NNP'],
+                                                        if_detect_NNP=if_detect_NNP,
+                                                        if_detect_JJ=if_detect_JJ,
+                                                        if_detect_NN=if_detect_NN,
+                                                        if_detect_CD=if_detect_CD)
+                        if if_detect_quote:
+                            compiled_cite_text = compiled_cite_text + cite_words['text']
+                if if_detect_quote:
+                    tags = text_tagging.detect_quotes_in_multiple_texts(tags, compiled_cite_text, text_quotes)
+                processed_tags = processed_tags + tags
+                tags = []
+    
+    #print("##################")
+    #print(processed_citations)
+    #print("##################")
     
     #We've done everything we need; produce output:
+    print(processed_tags)
+    HTML_out = programIO.parse_HTML(processed_tags)
+    print(HTML_out)
     segment_last = segment
-    output = {
+    data = {
         "segment": segment,
         "segment_last": segment_last,
         "external_URLs": external_URLs,
@@ -91,10 +135,41 @@ def main(article_title, data, settings = ("en", True, False, False, True, True))
         "processed_citations": processed_citations,
         "HTML_out": HTML_out
     }
-    return output
+    return data
+
+def process_citation(cite_URL, settings):
+    citation_words = {
+        "text": "", #Need to keep this to handle quotes
+        "CD": [],
+        "JJ": [],
+        "NN": [],
+        "NNP": []
+    }
+
+    for prohib_URL in __metadata__.__DO_NOT_SCRAPE_URLS__:
+        if cite_URL.find(prohib_URL)!=-1:
+            citation_words['text'] = "404"
+            return citation_words
+    
+    header = web_scraper.generate_header(settings[0])
+    text = web_scraper.get_URL_text(cite_URL, header)
+
+    if text != "404":
+        (terms_citations_CD,
+            terms_citations_JJ,
+            terms_citations_NN,
+            terms_citations_NNP) = text_tagging.get_citation_unique_terms(text, settings)
+        
+        citation_words['NN'] = terms_citations_NN
+        citation_words['NNP'] = terms_citations_NNP
+        citation_words['JJ'] = terms_citations_JJ
+        citation_words['CD'] = terms_citations_CD
+        citation_words['text'] = text
+
+    return citation_words
 
 settings = ("en", True, False, False, True, True)
-article_title = input("Enter article name")
+article_title = input("Enter article title: ")
 
 data = {
         "segment": 0,
@@ -102,7 +177,7 @@ data = {
         "external_URLs": [],
         "text_segments": [],
         "citation_data": [],
-        "processed_citations": [],
+        "processed_citations": dict(),
 }
 output = main(article_title, data, settings)
 
@@ -111,7 +186,8 @@ output = main(article_title, data, settings)
 
 #print("###############################################")
 
+#print(output)
 output["segment"] = 4000
 
 output_2 = main(article_title, output, settings)
-print(output_2["HTML_out"])
+#print(output_2["HTML_out"])

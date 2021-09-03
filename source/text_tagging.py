@@ -62,26 +62,22 @@ def tag_comparisons(text_of_tag, unique_terms_citations_of_tag, data):
             else:
                 data[elem[1]][2] = 'pass'
     return data
-def get_citation_unique_terms(text,
-                              if_detect_NNP = False,
-                              if_detect_JJ = False,
-                              if_detect_NN = False,
-                              if_detect_CD = False):
+def get_citation_unique_terms(text, settings):
     unique_terms_citations_NNP = []
     unique_terms_citations_NN = []
     unique_terms_citations_JJ = []
     unique_terms_citations_CD = []
     tokenized_citation = eval_citation(text)
-    if if_detect_NN: #NN (Proper noun, singular)
+    if settings['NN?']: #NN (Proper noun, singular)
         citetext_NN = eval_citation_for_type(tokenized_citation, 'NN')
         unique_terms_citations_NN = unique_terms_citations_NN + citetext_NN
-    if if_detect_NNP: #NNP (Proper noun, plural)
+    if settings['NNP?']: #NNP (Proper noun, plural)
         citetext_NNP = eval_citation_for_type(tokenized_citation, 'NNP')
         unique_terms_citations_NNP = unique_terms_citations_NNP + citetext_NNP
-    if if_detect_JJ: #JJ (Adjective)
+    if settings['JJ?']: #JJ (Adjective)
         citetext_JJ = eval_citation_for_type(tokenized_citation, 'JJ')
         unique_terms_citations_JJ = unique_terms_citations_JJ + citetext_JJ
-    if if_detect_CD: #CD (Cardinal number)
+    if settings['CD?']: #CD (Cardinal number)
         citetext_CD = eval_citation_for_type(tokenized_citation, 'CD')
         unique_terms_citations_CD = unique_terms_citations_CD + citetext_CD
     return (unique_terms_citations_CD,

@@ -23,7 +23,7 @@ def generate_api_header():
         }
     return header
     
-def generate_header(language="", article_title=""):
+def generate_header(language=""):
     """Creates the HTTP header which is sent when requesting citations"""
     if_from_web_text = "from web"
     if not __metadata__.__IF_WEB__:
@@ -32,7 +32,7 @@ def generate_header(language="", article_title=""):
     header = {
         'User-Agent': 'wiki_verify/'+__metadata__.__VERSION__+"(https://verify.toolforge.org/) "+if_from_web_text,
         'Accept-Language': "en-US,en;q=0.5",
-        'referer': "https://"+language+".wikipedia.org/"+article_title.replace(" ", "_"),
+        'referer': "https://"+language+".wikipedia.org/",
         'UPGRADE-INSECURE-REQUESTS': "1",
         'Accept-Encoding': "deflate, gzip;q=1.0, *;q=0.5", #Automatically decompressed by requests
         'Save-Data': "on",
