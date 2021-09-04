@@ -119,7 +119,6 @@ def main(article_title, data, settings):
                 tags = []
     
     #We've done everything we need; produce output:
-    print(processed_tags)
     HTML_out = programIO.parse_HTML(processed_tags)
     segment_last = segment
     data = {

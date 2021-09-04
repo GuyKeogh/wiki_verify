@@ -13,19 +13,47 @@ def count_newlines_before_position(newline_indexes, start_position):
     return 0
 
 def wikitext_to_plaintext(wikitext):
-    #Strip
     import re
     plaintext = "_PARAGRAPHSTART_ "+wikitext #Each segments is its own paragraph, so add tag
 
-    plaintext = wikitext.replace("\n", "") #Remove newlines (\n)
+    plaintext = plaintext.replace("\n", "") #Remove newlines (\n)
+    plaintext = plaintext.replace("``", '"')
+    
+    #Remove text between normal ref tags:
+    ref_starts = [m.start() for m in re.finditer('<ref>', plaintext)]
+    ref_ends = [m.start() for m in re.finditer('</ref>', plaintext)]
+    ref_starts = ref_starts[::-1] #Reverse list
+    ref_ends = ref_ends[::-1]
+    if ref_starts and len(ref_starts) == len(ref_ends):
+        index = 0
+        for start in ref_starts:
+            plaintext = plaintext[:ref_starts[index]] + "" + plaintext[ref_ends[index]+6:]
+            index+=1
     plaintext = re.sub(r'\<.*?\>', '', plaintext) #Remove <ref name=":0">, etc
-    plaintext = plaintext.replace("<ref>", "").replace("</ref>", "") #Remove normal ref tags too
 
     plaintext = re.sub(r'{{([^"]*)}}', "", plaintext) #Remove templates: {{ }} and all text in them
     plaintext = re.sub(r'{([^"]*)}', "", plaintext) #Remove templates: { } and all text in them
 
-    #Replace:
-    if plaintext.startswith("="): #Headers
+    #Handle wikilinks (e.g. [[Wikipedia]] and [[text you see|Wikipedia]] )
+    link_starts = [m.start() for m in re.finditer('\\[\\[', plaintext)]
+    link_ends = [m.start() for m in re.finditer(']]', plaintext)]
+    link_starts = link_starts[::-1] #Reverse list
+    link_ends = link_ends[::-1]
+    if link_starts and len(link_starts) == len(link_ends):
+        index = 0
+        for start in link_starts:
+            wikilink_text = plaintext[link_starts[index]+2:link_ends[index]] #+2 to ignore the [[
+            if "Category:" in wikilink_text or "File:" in wikilink_text:
+                wikilink_text = ""
+            elif "|" in wikilink_text:
+                wikilink_text = wikilink_text.partition("|")[0]
+            
+            #Text until the start of the wikilink + the new text + text after the wikilink:
+            plaintext = plaintext[:link_starts[index]] + wikilink_text + plaintext[link_ends[index]+2:]
+            index+=1
+
+    #Replace headers with tags:
+    if plaintext.startswith("_PARAGRAPHSTART_ ="):
         header_count = plaintext.count('=')
         if header_count%2 == 0: #Must have an even number of ='s signs
             header_number = int(header_count/2)
