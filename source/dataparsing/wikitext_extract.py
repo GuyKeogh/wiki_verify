@@ -12,17 +12,28 @@ def count_newlines_before_position(newline_indexes, start_position):
         index_count+=1
     return 0
 
-def strip_templates(wikitext):
+def wikitext_to_plaintext(wikitext):
+    #Strip
     import re
-    template_re = r'{([^"]*)}' #Remove { } and all text in them
-    wikitext = re.sub(template_re, "", wikitext)
+    plaintext = "_PARAGRAPHSTART_ "+wikitext #Each segments is its own paragraph, so add tag
 
-    template_re = r'{{([^"]*)}}' #Remove {{ }} and all text in them
-    wikitext = re.sub(template_re, "", wikitext)
+    plaintext = wikitext.replace("\n", "") #Remove newlines (\n)
+    plaintext = re.sub(r'\<.*?\>', '', plaintext) #Remove <ref name=":0">, etc
+    plaintext = plaintext.replace("<ref>", "").replace("</ref>", "") #Remove normal ref tags too
 
-    wikitext.replace("<ref>", "").replace("</ref>", "") #Remove ref tags too
+    plaintext = re.sub(r'{{([^"]*)}}', "", plaintext) #Remove templates: {{ }} and all text in them
+    plaintext = re.sub(r'{([^"]*)}', "", plaintext) #Remove templates: { } and all text in them
 
-    return wikitext
+    #Replace:
+    if plaintext.startswith("="): #Headers
+        header_count = plaintext.count('=')
+        if header_count%2 == 0: #Must have an even number of ='s signs
+            header_number = int(header_count/2)
+            header_text = "="*header_number
+            plaintext = plaintext.replace(header_text, " _HEADER"+str(header_number)+"START_ ", 1)
+            plaintext = plaintext.replace(header_text, " _HEADER"+str(header_number)+"END_ ", 1)
+
+    return plaintext + " _PARAGRAPHEND_"
 
 def extract_citation_info(external_URLs, wikitext):
     if not external_URLs:

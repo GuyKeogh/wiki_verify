@@ -35,7 +35,8 @@ def main(article_title, data, settings):
                 external_URLs = web_scraper.download_external_URLs(article_title,settings['language'])
                 if len(external_URLs) == 1 and external_URLs[0] == "_ERROR: problem getting external_URLs_":
                     programIO.record_error(article_title, external_URLs[0])
-                    return (external_URLs[0],[],[],[])
+                    data['errors']=external_URLs[0]
+                    return data
         except:
             error_msg = "_ERROR: problem getting external_URLs_"
             programIO.record_error(article_title, error_msg)
@@ -43,10 +44,11 @@ def main(article_title, data, settings):
 
         try: #Download article
             wikitext = web_scraper.download_wikitext(article_title,settings['language'])
+            data['wikitext'] = wikitext #For debugging
             #Using wikitext and external links, get more data about the citations:
             citation_data = wikitext_extract.extract_citation_info(external_URLs, wikitext)
         except:
-            data["HTML_out"] = "500"
+            data['errors']="500"
             return data
         
         #Split the article text based on its newlines (using these as segments):
@@ -54,6 +56,7 @@ def main(article_title, data, settings):
         newlines = [m.start() for m in re.finditer('\n', wikitext)]
         text_segments = []
         newline_index = 0
+        if_in_template = False
         for position in newlines:
             #Find the end of the section:
             position_end=0
@@ -62,25 +65,30 @@ def main(article_title, data, settings):
             else:
                 position_end = len(wikitext)
             
-            #Connect the relevant citations to the segment:
-            relevant_citations = []
-            for citation in citation_data:
-                (start_pos, end_pos, external_URL, newline_count, citation_group) = citation
-                if start_pos >= position and end_pos <= position_end:
-                    relevant_citations.append(external_URL)
-            
             #Find the relevant text covering that segment
-            plaintext = wikitext_extract.strip_templates(wikitext[position:position_end]) #Text covering the segment, stripped of refs and templates
-            text_segments.append(tuple((position, position_end, plaintext, relevant_citations)))
+            plaintext = wikitext_extract.wikitext_to_plaintext(wikitext[position:position_end]) #Text covering the segment, stripped of refs and templates
+            if plaintext: #Don't evaluate citations if there's no text
+                if not if_in_template:
+                    if '{{' in plaintext:
+                        if_in_template = True
+                    else:
+                        #Connect the relevant citations to the segment:
+                        relevant_citations = []
+                        for citation in citation_data:
+                            (start_pos, end_pos, external_URL, newline_count, citation_group) = citation
+                            if start_pos >= position and end_pos <= position_end:
+                                relevant_citations.append(external_URL)
+                        text_segments.append(tuple((position, position_end, plaintext, relevant_citations)))
+                else: #In a template
+                    if '}}' in plaintext:
+                        if_in_template = False
             newline_index+=1
-
-        HTML_out = "Working..."
     else: #Session data is already saved, so just process what's needed
         #Process info for every segment that's needed:
         for wiki_part in text_segments:
             if wiki_part[0] > segment_last and wiki_part[1] <= segment:
                 for cite in wiki_part[3]:
-                    if not cite in processed_citations:
+                    if not cite in processed_citations: #Don't have this citation yet
                         citation_words = process_citation(cite, settings)
                         processed_citations.update({cite: citation_words})
         
@@ -111,6 +119,7 @@ def main(article_title, data, settings):
                 tags = []
     
     #We've done everything we need; produce output:
+    print(processed_tags)
     HTML_out = programIO.parse_HTML(processed_tags)
     segment_last = segment
     data = {
@@ -121,7 +130,8 @@ def main(article_title, data, settings):
         "text_segments": text_segments,
         "citation_data": citation_data,
         "processed_citations": processed_citations,
-        "HTML_out": HTML_out
+        "HTML_out": HTML_out,
+        "errors": ""
     }
     return data
 
