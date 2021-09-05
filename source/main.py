@@ -18,6 +18,7 @@ def main(article_title, data, settings):
     text_segments = data['text_segments']
     citation_data = data['citation_data']
     processed_citations = data['processed_citations']
+    lastcites = [] #Debugging
     
     external_URLs_failed = []
     HTML_out = "blank"
@@ -29,8 +30,8 @@ def main(article_title, data, settings):
     #End of initialise
     
     #Start processing the article
-    if segment == 0: #First run, so needed data isn't yet stored; get that data.
-        try: #Download list of external links (future update: get it all from wikitext)
+    if segment == 0 and data['reprocess?'] == False: #First run, so needed data isn't yet stored; get that data.
+        try: #Download list of external links ( FIXME: get it all from wikitext in future)
             if if_evaluate_citations:
                 external_URLs = web_scraper.download_external_URLs(article_title,settings['language'])
                 if len(external_URLs) == 1 and external_URLs[0] == "_ERROR: problem getting external_URLs_":
@@ -67,7 +68,7 @@ def main(article_title, data, settings):
             
             #Find the relevant text covering that segment
             plaintext = wikitext_extract.wikitext_to_plaintext(wikitext[position:position_end]) #Text covering the segment, stripped of refs and templates
-            if plaintext: #Don't evaluate citations if there's no text
+            if plaintext:
                 if not if_in_template:
                     if '{{' in plaintext:
                         if_in_template = True
@@ -87,7 +88,7 @@ def main(article_title, data, settings):
         #Process info for every segment that's needed:
         for wiki_part in text_segments:
             if wiki_part[0] > segment_last and wiki_part[1] <= segment:
-                for cite in wiki_part[3]:
+                for cite in wiki_part[3]: # Citations covering section
                     if not cite in processed_citations: #Don't have this citation yet
                         citation_words = process_citation(cite, settings)
                         processed_citations.update({cite: citation_words})
@@ -98,6 +99,7 @@ def main(article_title, data, settings):
                 compiled_cite_text = ""
                 for cite_URL in wiki_part[3]:
                     if cite_URL in processed_citations:
+                        lastcites.append(cite_URL) #Debugging
                         cite_words = processed_citations[cite_URL]
 
                         if cite_words['text'] == '404':
@@ -119,7 +121,7 @@ def main(article_title, data, settings):
                 tags = []
     
     #We've done everything we need; produce output:
-    HTML_out = programIO.parse_HTML(processed_tags)
+    HTML_out = programIO.parse_HTML(processed_tags) + " <br> " + str(lastcites)
     segment_last = segment
     data = {
         "segment": segment,
@@ -144,23 +146,16 @@ def process_citation(cite_URL, settings):
     }
 
     for prohib_URL in __metadata__.__DO_NOT_SCRAPE_URLS__:
-        if cite_URL.find(prohib_URL)!=-1:
+        if prohib_URL in cite_URL:
             citation_words['text'] = "404"
             return citation_words
-    
+
     header = web_scraper.generate_header(settings['language'])
     text = web_scraper.get_URL_text(cite_URL, header)
+    if not text:
+        citation_words['text'] = "404"
+        return citation_words
+    
+    print("Added "+ cite_URL +" with text:" + text)
 
-    if text != "404" and text:
-        (terms_citations_CD,
-            terms_citations_JJ,
-            terms_citations_NN,
-            terms_citations_NNP) = text_tagging.get_citation_unique_terms(text, settings)
-        
-        citation_words['NN'] = terms_citations_NN
-        citation_words['NNP'] = terms_citations_NNP
-        citation_words['JJ'] = terms_citations_JJ
-        citation_words['CD'] = terms_citations_CD
-        citation_words['text'] = text
-
-    return citation_words
+    return text_tagging.tag_citation_text(citation_words, text, settings)

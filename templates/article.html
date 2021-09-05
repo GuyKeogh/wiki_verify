@@ -18,6 +18,40 @@
 			<center>
 		</header>
 
+		<script>
+			window.addEventListener('pageshow',function(event){reset()});
+			window.onbeforeunload = clear_session;
+			function reset(){
+				document.getElementById("ifDefaultSettings").checked = false;
+				document.getElementById("TextHidden").style.display = "none";
+				document.getElementById("submitBox").disabled = false;
+			}
+			function ToggleHidden(){
+				var hiddenOptions = document.getElementById("TextHidden");
+				if(document.getElementById("ifDefaultSettings").checked==false){
+					hiddenOptions.style.display = "none";
+				}else{
+					hiddenOptions.style.display = "block";
+				}
+			}
+			function clear_session(){
+				// do something...
+				return null;
+			}
+		</script>
+
+		<div class="form-check form-switch">
+			<input class="form-check-input" onclick="ToggleHidden()" type="checkbox" value="ifDefaultSettings" id="ifDefaultSettings" checked="false">
+			<label class="form-check-label" for="ifDefaultSettings">Correct {{URLs_failed_count}} URLs with errors?</label>
+		</div>
+		<form class="inline-form" action="/correct" method="POST" id="articleForm">
+		<div id="TextHidden" style="display:none">
+		{{URLs_failed_count}}<br>
+		Copy-and-paste the URL followed by it's text, for each URL you wish, then submit:
+		<textarea id="correction_text" name="correction_text" rows="5" style="width: 100%"></textarea>
+		<button class="btn btn-primary" id="submitBox" onclick="this.disabled=true;document.getElementById('articleForm').submit();">Submit</button>
+		</div>
+		</form>
 	<body>
 		<center><h2>{{page}}</h2></center>
 		{{text | safe}}

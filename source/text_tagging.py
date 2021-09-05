@@ -8,6 +8,20 @@ import re
 import nltk
 from nltk import word_tokenize
 
+def tag_citation_text(citation_words, text, settings):
+    if text != "404" and text:
+        (terms_citations_CD,
+        terms_citations_JJ,
+        terms_citations_NN,
+        terms_citations_NNP) = get_citation_unique_terms(text, settings)
+        
+        citation_words['NN'] = terms_citations_NN
+        citation_words['NNP'] = terms_citations_NNP
+        citation_words['JJ'] = terms_citations_JJ
+        citation_words['CD'] = terms_citations_CD
+        citation_words['text'] = text
+    return citation_words
+
 def tag_data(text):
     #Extract info
     sentences = nltk.sent_tokenize(text) #Organize into individual sentences

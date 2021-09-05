@@ -4,33 +4,50 @@ __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
 
-from source import programIO, text_tagging
+from source import text_tagging
 
-def correction(article_title, data, input_text, text_quotes, settings = ("en", True, False, False, True, True)):
-    """Takes the user-inputted citation text, processes it, and gives the final program output"""
-    (language, if_detect_CD, if_detect_JJ, if_detect_NN, if_detect_NNP, if_detect_quote) = settings
+def add_input(input_text, data, settings):
+    each_URL_location = []
+    processed_citations = data['processed_citations']
+
+    for external_URL in processed_citations:
+        print(external_URL)
+        URL = external_URL.replace("https://","").replace("http://","").replace("www.","")
+        position = input_text.find(URL)
+        URL_indexes = dict()
+        if position != -1:
+            URL_indexes.update({position+len(URL): URL})
+            print("Found URL. New index: " + str(URL_indexes))
+        
+        if not URL_indexes: #No URLs supplied
+            data['reprocess?'] = False
+            break
+        else:
+            indexes = []
+            for index in URL_indexes:
+                indexes.append(index) # Get the index from the dictionary with structure {index: URL}
+
+            indexes = sorted(indexes)
+            indexes_index = 0
+            for index in indexes:
+                citation_words = {
+                    "text": "",
+                    "CD": [],
+                    "JJ": [],
+                    "NN": [],
+                    "NNP": []
+                }
+
+                position_end=0
+                if(indexes_index+1 < len(indexes)):
+                    position_end = indexes[indexes_index+1] # Start of next URL in list
+                else:
+                    position_end = len(input_text) #End of inputted text - no more URLs
+                text = input_text[position:position_end]
+
+                citation_words = text_tagging.tag_citation_text(citation_words, text, settings)
+                processed_citations[external_URL] = citation_words
+                indexes_index+=1
     
-    if input_text!="":
-        (unique_terms_citations_CD,
-         unique_terms_citations_JJ,
-         unique_terms_citations_NN,
-         unique_terms_citations_NNP) = text_tagging.get_citation_unique_terms(input_text,
-                                                                 if_detect_NNP=if_detect_NNP,
-                                                                 if_detect_JJ=if_detect_JJ,
-                                                                 if_detect_NN=if_detect_NN,
-                                                                 if_detect_CD=if_detect_CD)
-
-        data = text_tagging.compare_citation_and_text_terms(data,
-                                               unique_terms_citations_CD,
-                                               unique_terms_citations_JJ,
-                                               unique_terms_citations_NN,
-                                               unique_terms_citations_NNP,
-                                               if_detect_NNP=if_detect_NNP,
-                                               if_detect_JJ=if_detect_JJ,
-                                               if_detect_NN=if_detect_NN,
-                                               if_detect_CD=if_detect_CD)
-        if(if_detect_quote):
-            data = text_tagging.detect_quotes_in_string(data, input_text, text_quotes)
-
-    html_output = programIO.parse_HTML(data)
-    return html_output
+    data['processed_citations'] = processed_citations
+    return data

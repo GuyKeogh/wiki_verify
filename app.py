@@ -32,18 +32,32 @@ def index():
 @app.route('/correct', methods = ["POST"])
 def correct():
     """When downloading citations failed, this allows the user to copy-and-paste them and continue"""
-    POST_session = request.form["session_ID"]
-    try:
-        (title, data, text_quotes, settings) = session[POST_session]
-        input_text = request.form["correction_text"]
-        html_output = correction.correction(title,data,input_text,text_quotes,settings)
-        return render_template("article.html",
-                               text=html_output,
-                               page=title,
-                               language=settings[0])
-    except:
-        error_message = "The session has expired, please try again. You can use the back button in your browser to access your inputted text."
-        return render_template("index.html", error_message=error_message)
+    input_text = request.form["correction_text"]
+    
+    filtered_name = session['filtered_name']
+    data = session['data']
+    settings = session['settings']
+    language = settings['language']
+
+    if len(input_text) > 10:
+        data['reprocess?'] = True #Reprocess all data
+        data = correction.add_input(input_text, data, settings)
+
+    data = main.main(filtered_name, data, settings)
+
+    URLs_failed = []
+    for URL in data['processed_citations']:
+        if data['processed_citations'][URL]['text'] == '404':
+            URLs_failed.append(URL)
+    
+    return render_template("article.html",
+                            text=data['HTML_out'],
+                            page=filtered_name,
+                            language=language,
+                            URLs_failed=URLs_failed,
+                            URLs_failed_count=len(URLs_failed),
+                            debug=data,
+                            )
 
 @app.route('/article_dynamic', methods = ["POST"])
 def article_dynamic():
@@ -55,11 +69,19 @@ def article_dynamic():
     data['segment']+=1000
     data = main.main(filtered_name,data,settings)
 
+    URLs_failed = []
+    for URL in data['processed_citations']:
+        if data['processed_citations'][URL]['text'] == '404':
+            URLs_failed.append(URL)
+
     return render_template("article.html",
-                               text=data['HTML_out'],
-                               debug=data,
-                               page=filtered_name,
-                               language=language)
+                            text=data['HTML_out'],
+                            page=filtered_name,
+                            language=language,
+                            URLs_failed=URLs_failed,
+                            URLs_failed_count=len(URLs_failed),
+                            debug=data,
+                            )
 
 @app.route('/article', methods = ["POST"])
 def article():
@@ -102,9 +124,12 @@ def article():
             "segment_last": 0,
             "external_URLs": [],
             "text_segments": [],
-            "citation_data": [],
+            "citation_data": [], # Position of each citation in the original wikitext
             "processed_tags": [],
-            "processed_citations": dict(),
+            "processed_citations": dict(), # Text and tagged words of each citation URL
+            "errors": "",
+            "wikitext": "", # Original Wikipedia wikitext, for debugging
+            "reprocess?": False
     }
     data = main.main(filtered_name,data,settings)
     session['filtered_name'] = filtered_name
