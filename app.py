@@ -136,27 +136,11 @@ def article():
     session['data'] = data
     session['settings'] = settings
 
-    fail_count = 0
-    #fail_count = len(external_URLs_failed)
-    
-    if fail_count>0: #Create session to request copy-and-paste of failed URLs
-        return render_template("article_errors.html",
-                               text=data['HTML_out'],
-                               page=filtered_name,
-                               language=language,
-                               error_count=fail_count,
-                               #URLs_failed=external_URLs_failed
-                               )
     #Using backend output, render HTML:
-    if(data['HTML_out']=="500"): #Generic server error
+    if(data['errors']=="500"): #Generic server error
         return render_template("index.html",
                                error_message = "The article does not exist (title is case-sensitive), or another error occurred.")
-    elif(data['HTML_out']=="_ERROR: too many external_URLs_"): 
-        max_URL = str(__metadata__.__WEB_EXTERNAL_URL_LIMIT__)
-        error_message = "There are too many citations in the article (over "+max_URL+"). Note: this limit does not apply with the desktop program."
-        return render_template("index.html",
-                               error_message = error_message)
-    elif(data['HTML_out']=="_ERROR: problem getting external_URLs_"): 
+    elif(data['errors']=="_ERROR: problem getting external_URLs_"): 
         error_message = "A problem occurred grabbing the citations from Wikipedia, please try again. This error has been recorded."
         return render_template("index.html",
                                error_message = error_message)
@@ -210,11 +194,6 @@ def article_named(POST_name):
     if(html_output=="500"): #Generic server error
         return render_template("index.html",
                                error_message = "The article does not exist (title is case-sensitive), or another error occurred downloading the article.")
-    elif(html_output=="_ERROR: too many external_URLs_"): 
-        max_URL = str(__metadata__.__WEB_EXTERNAL_URL_LIMIT__)
-        error_message = "There are too many external links in the article (over "+max_URL+"). Note: this limit does not apply with the desktop program."
-        return render_template("index.html",
-                               error_message = error_message)
     else: #Everything is fine
         return render_template("article.html",
                                text=html_output,

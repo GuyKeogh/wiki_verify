@@ -46,7 +46,7 @@ def wikitext_to_plaintext(wikitext):
             if "Category:" in wikilink_text or "File:" in wikilink_text:
                 wikilink_text = ""
             elif "|" in wikilink_text:
-                wikilink_text = wikilink_text.partition("|")[0]
+                wikilink_text = wikilink_text.partition("|")[2]
             
             #Text until the start of the wikilink + the new text + text after the wikilink:
             plaintext = plaintext[:link_starts[index]] + wikilink_text + plaintext[link_ends[index]+2:]

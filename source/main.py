@@ -20,7 +20,6 @@ def main(article_title, data, settings):
     processed_citations = data['processed_citations']
     lastcites = [] #Debugging
     
-    external_URLs_failed = []
     HTML_out = "blank"
 
     if_evaluate_citations=True
@@ -40,8 +39,9 @@ def main(article_title, data, settings):
                     return data
         except:
             error_msg = "_ERROR: problem getting external_URLs_"
+            data['errors']=error_msg
             programIO.record_error(article_title, error_msg)
-            return (error_msg,[],[],[])
+            return data
 
         try: #Download article
             wikitext = web_scraper.download_wikitext(article_title,settings['language'])
@@ -96,7 +96,7 @@ def main(article_title, data, settings):
                 #Use relevant citations to verify section text:
                 tags = text_tagging.tag_data(wiki_part[2])
                 text_quotes = text_tagging.tag_text_quotes(wiki_part[2])
-                compiled_cite_text = ""
+                compiled_cite_text = []
                 for cite_URL in wiki_part[3]:
                     if cite_URL in processed_citations:
                         lastcites.append(cite_URL) #Debugging
@@ -114,7 +114,7 @@ def main(article_title, data, settings):
                                                         if_detect_NN=settings['NN?'],
                                                         if_detect_CD=settings['CD?'])
                         if settings['quote?']:
-                            compiled_cite_text = compiled_cite_text + cite_words['text']
+                            compiled_cite_text.append(cite_words['text'])
                 if settings['quote?']:
                     tags = text_tagging.detect_quotes_in_multiple_texts(tags, compiled_cite_text, text_quotes)
                 processed_tags = processed_tags + tags
