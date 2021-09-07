@@ -10,7 +10,6 @@ from source.dataparsing import wikitext_extract
 
 def main(article_title, data, settings):
     #Intialise:
-    tags = []
     processed_tags = data['processed_tags']
     segment = data['segment']
     segment_last = data['segment_last']
@@ -30,27 +29,27 @@ def main(article_title, data, settings):
     
     #Start processing the article
     if segment == 0 and data['reprocess?'] == False: #First run, so needed data isn't yet stored; get that data.
-        try: #Download list of external links ( FIXME: get it all from wikitext in future)
-            if if_evaluate_citations:
-                external_URLs = web_scraper.download_external_URLs(article_title,settings['language'])
-                if len(external_URLs) == 1 and external_URLs[0] == "_ERROR: problem getting external_URLs_":
-                    programIO.record_error(article_title, external_URLs[0])
-                    data['errors']=external_URLs[0]
-                    return data
-        except:
-            error_msg = "_ERROR: problem getting external_URLs_"
-            data['errors']=error_msg
-            programIO.record_error(article_title, error_msg)
-            return data
+        #try: #Download list of external links ( FIXME: get it all from wikitext in future)
+        if if_evaluate_citations:
+            external_URLs = web_scraper.download_external_URLs(article_title,settings['language'])
+            if len(external_URLs) == 1 and external_URLs[0] == "_ERROR: problem getting external_URLs_":
+                programIO.record_error(article_title, external_URLs[0])
+                data['errors']=external_URLs[0]
+                return data
+        #except:
+        #    error_msg = "_ERROR: problem getting external_URLs_"
+        #    data['errors']=error_msg
+        #    programIO.record_error(article_title, error_msg)
+        #    return data
 
-        try: #Download article
-            wikitext = web_scraper.download_wikitext(article_title,settings['language'])
-            data['wikitext'] = wikitext #For debugging
-            #Using wikitext and external links, get more data about the citations:
-            citation_data = wikitext_extract.extract_citation_info(external_URLs, wikitext)
-        except:
-            data['errors']="500"
-            return data
+        #try: #Download article
+        wikitext = web_scraper.download_wikitext(article_title,settings['language'])
+        data['wikitext'] = wikitext #For debugging
+        #Using wikitext and external links, get more data about the citations:
+        citation_data = wikitext_extract.extract_citation_info(external_URLs, wikitext)
+        #except:
+        #    data['errors']="500"
+        #    return data
         
         #Split the article text based on its newlines (using these as segments):
         import re
@@ -95,7 +94,7 @@ def main(article_title, data, settings):
         
                 #Use relevant citations to verify section text:
                 tags = text_tagging.tag_data(wiki_part[2])
-                text_quotes = text_tagging.tag_text_quotes(wiki_part[2])
+                tags = text_tagging.set_needed_to_false(tags, settings)
                 compiled_cite_text = []
                 for cite_URL in wiki_part[3]:
                     if cite_URL in processed_citations:
@@ -116,9 +115,9 @@ def main(article_title, data, settings):
                         if settings['quote?']:
                             compiled_cite_text.append(cite_words['text'])
                 if settings['quote?']:
+                    text_quotes = text_tagging.tag_text_quotes(wiki_part[2])
                     tags = text_tagging.detect_quotes_in_multiple_texts(tags, compiled_cite_text, text_quotes)
                 processed_tags = processed_tags + tags
-                tags = []
     
     #We've done everything we need; produce output:
     HTML_out = programIO.parse_HTML(processed_tags) + " <br> " + str(lastcites)
@@ -155,7 +154,5 @@ def process_citation(cite_URL, settings):
     if not text:
         citation_words['text'] = "404"
         return citation_words
-    
-    print("Added "+ cite_URL +" with text:" + text)
 
     return text_tagging.tag_citation_text(citation_words, text, settings)

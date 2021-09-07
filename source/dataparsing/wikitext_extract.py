@@ -97,15 +97,23 @@ def extract_citation_info(external_URLs, wikitext):
 
                 label_name_index = citation_info.find('name=')
                 if label_name_index != -1: #Citation contains a group name too; the URL can then be used for citations with the same label
-                    citation_group_quote = re.search(double_quote_re, citation_info[label_name_index:]).group() #Find first double quote after name=
-                    citation_group = citation_group_quote[1:-1] #Remove the double quotes (first and last characters)
-                    label_dictionary.update({citation_group: URL})
+                    if '"' in citation_info: #E.g. if the ref template is <ref name="whatever">, remove the quotes
+                        citation_group_quote = re.search(double_quote_re, citation_info[label_name_index:]).group() #Find first double quote after name=
+                        citation_group = citation_group_quote[1:-1] #Remove the double quotes (first and last characters)
+                        label_dictionary.update({citation_group: URL})
+                    else:
+                        label_dictionary.update({citation_info[label_name_index:]: URL})
                 break #Exit the for loop, since we have what we need from the citation
 
         if not if_URL_found: #No known external URL found in the template; search for a group instead
             label_name_index = citation_info.find('name=')
             if label_name_index != -1:
-                citation_group = citation_group_quote[1:-1] #We now have the group name, so we can look it up in the dictionary once that's fully made
+                if '"' in citation_info: #E.g. if the ref template is <ref name="whatever">, remove the quotes
+                    citation_group_quote = re.search(double_quote_re, citation_info[label_name_index:]).group() #Find first double quote after name=
+                    citation_group = citation_group_quote[1:-1] #We now have the group name, so we can look it up in the dictionary once that's fully made
+                    label_dictionary.update({citation_group: URL})
+                else:
+                    label_dictionary.update({citation_info[label_name_index:]: URL})
         
         newline_count = count_newlines_before_position(newline_indexes, start_position)
         citations.append(tuple((start_position, end_position, external_URL, newline_count, citation_group)))

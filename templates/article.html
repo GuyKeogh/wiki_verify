@@ -46,8 +46,8 @@
 		</div>
 		<form class="inline-form" action="/correct" method="POST" id="articleForm">
 		<div id="TextHidden" style="display:none">
-		{{URLs_failed_count}}<br>
-		Copy-and-paste the URL followed by it's text, for each URL you wish, then submit:
+		{{URLs_failed}}<br>
+		Copy-and-paste the URL followed by its text, for each URL you wish, then submit:
 		<textarea id="correction_text" name="correction_text" rows="5" style="width: 100%"></textarea>
 		<button class="btn btn-primary" id="submitBox" onclick="this.disabled=true;document.getElementById('articleForm').submit();">Submit</button>
 		</div>

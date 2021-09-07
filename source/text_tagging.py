@@ -32,7 +32,7 @@ def tag_data(text):
     tagged_data = []
     index = 0
     for word in data:
-        tagged_data.append([word[0],word[1], 'none'])
+        tagged_data.append([word[0], word[1], 'none'])
         index+=1
     return tagged_data
 def tag_text_of_type(tag_type, data):
@@ -44,6 +44,24 @@ def tag_text_of_type(tag_type, data):
             text_of_tag.append(tuple((word[0], index)))
         index+=1
     return text_of_tag
+def set_needed_to_false(tags, settings):
+    needed_types = []
+    if settings['JJ?']:
+        needed_types.append('JJ')
+    if settings['NNP?']:
+        needed_types.append('NNP')
+    if settings['NN?']:
+        needed_types.append('NN')
+    if settings['CD?']:
+        needed_types.append('CD')
+    
+    index = 0
+    for tag in tags:
+        if tag[1] in needed_types:
+            tags[index][2] = 'fail'
+        index+=1
+    return tags
+
 def tag_text_quotes(text):
     """Detects all info in single or double quotes, and outputs all these as strings in a list"""
     matches=re.findall(r'\"(.+?)\"',text)
@@ -140,17 +158,10 @@ def mark_present_quotes(data, quote, if_quote_in_citation):
                 if_in_quote = True
                 quote_in_data_startword = index
         else: #If we seem to be in a quote, check it's still true
-            if len(quote_list)==(index-quote_in_data_startword): #Detected a quote
+            if len(quote_list)==(index-quote_in_data_startword): #Fully detected the quote
                 for k in range(quote_in_data_startword, index, 1):
-                    #data[k][1] != ... comparisons prevent correction submission from being corrected as wrong, ...
-                    #... simply because text to back them up was not repeated in inputted text
-                    if not if_quote_in_citation and data[k][1] != 'quote' and data[k][1] != 'pass':
-                        data[k][1] = 'quote'
-                        data[k][2] = 'fail'
-                    else:
-                        data[k][1] = 'quote'
-                        data[k][2] = 'pass'
-
+                    data[k][1] = 'quote'
+                    data[k][2] = 'pass'
                 if_in_quote = False
                 quote_in_data_startword = 0
             elif word[0]!=quote_list[index-quote_in_data_startword]:
@@ -171,6 +182,5 @@ def detect_quotes_in_multiple_texts(data, citation_text, text_quotes):
         for citation in citation_text:
             if not if_quote_in_citation: #Just needs to be in one citation
                 if_quote_in_citation = check_quote_in_text(quote, citation)
-
         data = mark_present_quotes(data, quote, if_quote_in_citation)
     return data
