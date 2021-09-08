@@ -12,4 +12,6 @@ __IF_WEB__ = False
 
 #Don't auto-scrape these URLs, and instead ask for copy-and-paste:
 __DO_NOT_SCRAPE_URLS__ = ["web.archive.org/web/",
-                          "archive.is/"]
+                          "archive.is/",
+                          "doi.org/",
+                          "google.com/"]

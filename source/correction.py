@@ -9,45 +9,64 @@ from source import text_tagging
 def add_input(input_text, data, settings):
     each_URL_location = []
     processed_citations = data['processed_citations']
+    #print("Processed citations: " + str(processed_citations))
+    URL_indexes = dict()
 
     for external_URL in processed_citations:
-        print(external_URL)
-        URL = external_URL.replace("https://","").replace("http://","").replace("www.","")
-        position = input_text.find(URL)
-        URL_indexes = dict()
-        if position != -1:
-            URL_indexes.update({position+len(URL): URL})
+        if not external_URL or external_URL == '':
+            continue
+
+        print("Checking " + external_URL)
+        position = input_text.find(external_URL)
+        if position != -1: # If some URL on the page is within the user input
+            URL_indexes.update({position+len(external_URL): external_URL}) # Save the start position of the URL and the URL itself
             print("Found URL. New index: " + str(URL_indexes))
-        
-        if not URL_indexes: #No URLs supplied
-            data['reprocess?'] = False
-            break
         else:
-            indexes = []
-            for index in URL_indexes:
-                indexes.append(index) # Get the index from the dictionary with structure {index: URL}
+            print("Nope.")
+    
+    if not URL_indexes: #No URLs supplied
+        data['reprocess?'] = False
+        print("No urls given")
+    else:
+        # Order the indexes:
+        URL_indexes_ordered = []
+        for index in URL_indexes:
+            URL_indexes_ordered.append(index) # Get the index from the dictionary with structure {index: URL}
+        URL_indexes_ordered = sorted(URL_indexes_ordered)
 
-            indexes = sorted(indexes)
-            indexes_index = 0
-            for index in indexes:
-                citation_words = {
-                    "text": "",
-                    "CD": [],
-                    "JJ": [],
-                    "NN": [],
-                    "NNP": []
-                }
+        print("ordered indexes: " + str(URL_indexes_ordered))
 
-                position_end=0
-                if(indexes_index+1 < len(indexes)):
-                    position_end = indexes[indexes_index+1] # Start of next URL in list
-                else:
-                    position_end = len(input_text) #End of inputted text - no more URLs
-                text = input_text[position:position_end]
+        #Add the inputted text to its value in the dictionary of citations and their data:
+        indexes_index = 0
+        for position_start in URL_indexes_ordered:
+            citation_words = {
+                "text": "",
+                "CD": [],
+                "JJ": [],
+                "NN": [],
+                "NNP": []
+            }
+            # We already have the start index, so find the end index:
+            position_end=0
+            if(indexes_index+1 < len(URL_indexes_ordered)):
+                position_end = URL_indexes_ordered[indexes_index+1] # Start of next URL in list
+            else:
+                position_end = len(input_text) #End of inputted text - no more URLs
+            
+            print("Start is " + str(position_start) + " and end is " + str(position_end))
+            # Using the start and end indexes, find the relevant text:
+            text = input_text[position_start:position_end]
 
-                citation_words = text_tagging.tag_citation_text(citation_words, text, settings)
-                processed_citations[external_URL] = citation_words
-                indexes_index+=1
+            # Get the associated URL via a dictionary lookup with the first index:
+            external_URL = URL_indexes[position_start]
+
+            # Finally, do all the processing, adding the user-inputted text to the processed citations:
+            citation_words = text_tagging.tag_citation_text(citation_words, text, settings)
+            print("Added " + str(citation_words) + " to " + external_URL)
+            processed_citations[external_URL] = citation_words
+            indexes_index+=1
+
+            #raise ValueError('A very specific bad thing happened.')
     
     data['processed_citations'] = processed_citations
     return data

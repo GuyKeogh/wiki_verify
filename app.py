@@ -47,7 +47,7 @@ def correct():
 
     URLs_failed = []
     for URL in data['processed_citations']:
-        if data['processed_citations'][URL]['text'] == '404':
+        if URL and URL != '' and data['processed_citations'][URL]['text'] == '404':
             URLs_failed.append(URL)
     
     return render_template("article.html",
@@ -71,7 +71,7 @@ def article_dynamic():
 
     URLs_failed = []
     for URL in data['processed_citations']:
-        if data['processed_citations'][URL]['text'] == '404':
+        if URL and URL != '' and data['processed_citations'][URL]['text'] == '404':
             URLs_failed.append(URL)
 
     return render_template("article.html",
