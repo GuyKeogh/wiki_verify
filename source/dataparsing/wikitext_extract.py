@@ -75,10 +75,19 @@ def extract_citation_info(external_URLs, wikitext):
     reference_starts = [m.start() for m in re.finditer('<ref', wikitext)] #Both normal cites and labels start with '<ref'
     reference_ends = [m.start() for m in re.finditer('</ref>|/>', wikitext)] #Normal cites end in '</ref>', but labels end in '/>'
 
+    # Ensure that all reference start indexes are before the end indexes (e.g. '/>' in '<br />' mixed in), and remove offending end indexes:
+    if len(reference_ends) > len(reference_starts):
+        index = 0
+        while index < len(reference_ends):
+            if reference_ends[index] < reference_starts[index]:
+                reference_ends.pop(index)
+            index+=1
+
     citations = [] #List of tuples, with structure: (start_position, end_position, URL, how many newlines before start, label (optional))
     label_dictionary = {};
 
     #Check which external_URL falls between the reference start and ends:
+    double_quote_re = r'"([^"]*)"' #Regex pattern to get text between double quote
     index = 0
     for reference in reference_starts:
         start_position = reference_starts[index]
@@ -86,11 +95,11 @@ def extract_citation_info(external_URLs, wikitext):
         citation_info = wikitext[start_position:end_position]
         external_URL = ""
         citation_group = ""
-
-        double_quote_re = r'"([^"]*)"' #Regex pattern to get text between double quote
-
         if_URL_found = False
+
         for URL in external_URLs:
+            if not URL:
+                continue
             if citation_info.find(URL) != -1: #Check if a known external URL is between <ref> and </ref>
                 if_URL_found = True
                 external_URL = URL
@@ -103,21 +112,21 @@ def extract_citation_info(external_URLs, wikitext):
                         label_dictionary.update({citation_group: URL})
                     else:
                         label_dictionary.update({citation_info[label_name_index:]: URL})
-                break #Exit the for loop, since we have what we need from the citation
+                break
 
-        if not if_URL_found: #No known external URL found in the template; search for a group instead
+        if not if_URL_found and URL: #No known external URL found in the template; search for a group instead
             label_name_index = citation_info.find('name=')
             if label_name_index != -1:
+                citation_group = ""
                 if '"' in citation_info: #E.g. if the ref template is <ref name="whatever">, remove the quotes
                     citation_group_quote = re.search(double_quote_re, citation_info[label_name_index:]).group() #Find first double quote after name=
                     citation_group = citation_group_quote[1:-1] #We now have the group name, so we can look it up in the dictionary once that's fully made
-                    label_dictionary.update({citation_group: URL})
                 else:
-                    label_dictionary.update({citation_info[label_name_index:]: URL})
+                    citation_group = citation_info[label_name_index:].replace("name=", "")
+                label_dictionary.update({citation_group: URL})
         
         newline_count = count_newlines_before_position(newline_indexes, start_position)
         citations.append(tuple((start_position, end_position, external_URL, newline_count, citation_group)))
-
         index+=1
     
     #Fill in the URLs for citation groups:
@@ -127,10 +136,9 @@ def extract_citation_info(external_URLs, wikitext):
         if not cite_URL and cite_label: #If there's no URL, but there is a group
             if cite_label in label_dictionary:
                 cite_URL = label_dictionary[cite_label] #Get the URL using the label
-            else:
-                continue
         
         updated_citation_tuple = (start, end, cite_URL, cite_index, cite_label)
         citations[index] = updated_citation_tuple
         index+=1
+    
     return citations
