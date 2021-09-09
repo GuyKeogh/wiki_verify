@@ -9,7 +9,10 @@ from os import urandom, cpu_count
 from datetime import timedelta
 from flask import Flask, session, request, render_template, send_file
 from flask_session import Session
-from source import main, filter_title, __metadata__, correction
+
+from source import main, __metadata__
+from source.io import filter_title
+from source.dataparsing import correction
 
 app = Flask(__name__)
 

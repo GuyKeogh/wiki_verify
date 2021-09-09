@@ -5,8 +5,9 @@ __description__ = "Backend of verification tool"
 __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
-from source import article_standardise, programIO, text_tagging, web_scraper, __metadata__
-from source.dataparsing import wikitext_extract
+from source import __metadata__
+from source.io import output, web_scraper
+from source.dataparsing import wikitext_extract, text_tagging, article_standardise
 
 def main(article_title, data, settings):
     #Intialise:
@@ -17,7 +18,6 @@ def main(article_title, data, settings):
     text_segments = data['text_segments']
     citation_data = data['citation_data']
     processed_citations = data['processed_citations']
-    lastcites = [] #Debugging
     
     HTML_out = "blank"
 
@@ -33,13 +33,13 @@ def main(article_title, data, settings):
         if if_evaluate_citations:
             external_URLs = web_scraper.download_external_URLs(article_title,settings['language'])
             if len(external_URLs) == 1 and external_URLs[0] == "_ERROR: problem getting external_URLs_":
-                programIO.record_error(article_title, external_URLs[0])
+                output.record_error(article_title, external_URLs[0])
                 data['errors']=external_URLs[0]
                 return data
         #except:
         #    error_msg = "_ERROR: problem getting external_URLs_"
         #    data['errors']=error_msg
-        #    programIO.record_error(article_title, error_msg)
+        #    output.record_error(article_title, error_msg)
         #    return data
 
         #try: #Download article
@@ -98,7 +98,6 @@ def main(article_title, data, settings):
                 compiled_cite_text = []
                 for cite_URL in wiki_part[3]:
                     if cite_URL in processed_citations:
-                        lastcites.append(cite_URL) #Debugging
                         cite_words = processed_citations[cite_URL]
 
                         if cite_words['text'] == '404':
@@ -120,7 +119,7 @@ def main(article_title, data, settings):
                 processed_tags = processed_tags + tags
     
     #We've done everything we need; produce output:
-    HTML_out = programIO.parse_HTML(processed_tags) + " <br> " + str(lastcites)
+    HTML_out = output.parse_HTML(processed_tags)
     segment_last = segment
     data = {
         "segment": segment,

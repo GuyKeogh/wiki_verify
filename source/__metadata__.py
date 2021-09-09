@@ -6,7 +6,7 @@ __license__ = "BSD 2-Clause"
 from os import urandom
 
 __FLASK_SECRET__ = str(urandom(24))
-__IF_PRODUCTION__ = True
+__IF_PRODUCTION__ = False
 __VERSION__ = "0.9.7"
 __IF_WEB__ = False
 

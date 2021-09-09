@@ -13,11 +13,22 @@ def count_newlines_before_position(newline_indexes, start_position):
     return 0
 
 def wikitext_to_plaintext(wikitext):
+    print(wikitext)
     import re
     plaintext = "_PARAGRAPHSTART_ "+wikitext #Each segments is its own paragraph, so add tag
 
     plaintext = plaintext.replace("\n", "") #Remove newlines (\n)
-    plaintext = plaintext.replace("``", '"')
+
+    #Bold text:
+    index = 0
+    bold_indexes = [m.start() for m in re.finditer("'''", plaintext)]
+    for position in reversed(bold_indexes):
+        replacement_text = "_BOLDSTART_"
+        if index%2 == 1: # Odd numbered
+            replacement_text = "_BOLDEND_"
+
+        wikitext = wikitext[:position] + replacement_text + wikitext[position+3:]
+        index+=1
     
     #Remove text between normal ref tags:
     ref_starts = [m.start() for m in re.finditer('<ref>', plaintext)]
@@ -44,6 +55,7 @@ def wikitext_to_plaintext(wikitext):
         for start in link_starts:
             wikilink_text = plaintext[link_starts[index]+2:link_ends[index]] #+2 to ignore the [[
             if "Category:" in wikilink_text or "File:" in wikilink_text:
+                # TODO: Handle wikilinks in these, e.g. [[File:whatever.jpg|thumb|200px| image description and [[page]]]]
                 wikilink_text = ""
             elif "|" in wikilink_text:
                 wikilink_text = wikilink_text.partition("|")[2]

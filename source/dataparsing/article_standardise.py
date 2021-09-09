@@ -5,22 +5,6 @@ __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
 
-def space_after_punctuation(data):
-    """Add spaces after . and ,"""
-    prior_elem_was_punctuation = False
-    elemcount = 0
-    for elem in data:
-        if prior_elem_was_punctuation:
-            if elem != " ":
-                data = data[:elemcount] + ' ' + data[elemcount:]
-                elemcount+=1 #Added element before us, putting us 1 ahead of original. Compensate.
-        if elem in ('.', ','):
-            prior_elem_was_punctuation = True
-        else:
-            prior_elem_was_punctuation = False
-        elemcount+=1
-    return data
-
 def strip_end_sections(text):
     """Strip useless parts at end (refs, see also, etc)"""
     References_start = text.rfind("References")
