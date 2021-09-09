@@ -23,13 +23,12 @@
 			window.addEventListener('pageshow',function(event){reset()});
 			window.onbeforeunload = clear_session;
 			function reset(){
-				document.getElementById("ifDefaultSettings").checked = false;
 				document.getElementById("TextHidden").style.display = "none";
 				document.getElementById("submitBox").disabled = false;
 			}
 			function ToggleHidden(){
 				var hiddenOptions = document.getElementById("TextHidden");
-				if(document.getElementById("ifDefaultSettings").checked==false){
+				if(document.getElementById("correctionForm").checked==false){
 					hiddenOptions.style.display = "none";
 				}else{
 					hiddenOptions.style.display = "block";
@@ -42,8 +41,8 @@
 		</script>
 	
 		<div class="form-check form-switch">
-			<input class="form-check-input" onclick="ToggleHidden()" type="checkbox" value="ifDefaultSettings" id="ifDefaultSettings" checked="false">
-			<label class="form-check-label" for="ifDefaultSettings">Correct {{error_count}} URLs with errors?</label>
+			<input class="form-check-input" onclick="ToggleHidden()" type="checkbox" value="correctionForm" id="correctionForm" checked="false">
+			<label class="form-check-label" for="correctionForm">Correct {{error_count}} URLs with errors?</label>
 		</div>
 		<form class="inline-form" action="/correct" method="POST" id="articleForm">
 		<div id="TextHidden" style="display:none">
@@ -56,9 +55,12 @@
 		</form>
 		
 		<center><h2>{{page}}</h2></center>
-		
 		{{text | safe}}
 		<br>
+		<center>
+		<form class="inline-form" action="/article" method="POST" id="articleForm">
+			<button class="btn btn-primary" id="submitBox" onclick="this.disabled=true;document.getElementById('articleForm').submit();">Next paragraph(s)</button>
+		</form>
 	</body>
 
 	<footer class="footer">

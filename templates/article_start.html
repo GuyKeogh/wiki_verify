@@ -18,40 +18,26 @@
 			<center>
 		</header>
 	<body>
-		<script>
-			window.addEventListener('pageshow',function(event){reset()});
-			window.onbeforeunload = clear_session;
+    <script>
+			window.addEventListener('pageshow',function(event){reset();redirect()});
 			function reset(){
-				document.getElementById("TextHidden").style.display = "none";
 				document.getElementById("submitBox").disabled = false;
 			}
-			function ToggleHidden(){
-				var hiddenOptions = document.getElementById("TextHidden");
-				if(document.getElementById("ifDefaultSettings").checked==false){
-					hiddenOptions.style.display = "none";
-				}else{
-					hiddenOptions.style.display = "block";
-				}
-			}
-			function clear_session(){
-				// do something...
-				return null;
-			}
+      function redirect(){
+        document.getElementById('articleForm').submit();
+      }
 		</script>
 		<center><h2>{{page}}</h2></center>
-		{{text | safe}}
+		Processing. Click below if you are not automatically redirected.
 		<br>
 		<center>
 		<form class="inline-form" action="/article" method="POST" id="articleForm">
 			<button class="btn btn-primary" id="submitBox" onclick="this.disabled=true;document.getElementById('articleForm').submit();">Next paragraph(s)</button>
 		</form>
-		
 		</div>
 		</form>
 		</center>
 		<br>
-		<center><h4>Debug info</h4></center>
-		{{debug}}
 		<br>
 	</body>
 

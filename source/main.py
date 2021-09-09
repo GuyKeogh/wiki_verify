@@ -29,27 +29,27 @@ def main(article_title, data, settings):
     
     #Start processing the article
     if segment == 0 and data['reprocess?'] == False: #First run, so needed data isn't yet stored; get that data.
-        #try: #Download list of external links ( FIXME: get it all from wikitext in future)
-        if if_evaluate_citations:
-            external_URLs = web_scraper.download_external_URLs(article_title,settings['language'])
-            if len(external_URLs) == 1 and external_URLs[0] == "_ERROR: problem getting external_URLs_":
-                output.record_error(article_title, external_URLs[0])
-                data['errors']=external_URLs[0]
-                return data
-        #except:
-        #    error_msg = "_ERROR: problem getting external_URLs_"
-        #    data['errors']=error_msg
-        #    output.record_error(article_title, error_msg)
-        #    return data
+        try: #Download list of external links ( FIXME: get it all from wikitext in future)
+            if if_evaluate_citations:
+                external_URLs = web_scraper.download_external_URLs(article_title,settings['language'])
+                if len(external_URLs) == 1 and external_URLs[0] == "_ERROR: problem getting external_URLs_":
+                    output.record_error(article_title, external_URLs[0])
+                    data['errors']=external_URLs[0]
+                    return data
+        except:
+            error_msg = "_ERROR: problem getting external_URLs_"
+            data['errors']=error_msg
+            output.record_error(article_title, error_msg)
+            return data
 
-        #try: #Download article
-        wikitext = web_scraper.download_wikitext(article_title,settings['language'])
-        data['wikitext'] = wikitext #For debugging
-        #Using wikitext and external links, get more data about the citations:
-        citation_data = wikitext_extract.extract_citation_info(external_URLs, wikitext)
-        #except:
-        #    data['errors']="500"
-        #    return data
+        try: #Download article
+            wikitext = web_scraper.download_wikitext(article_title,settings['language'])
+            data['wikitext'] = wikitext #For debugging
+            #Using wikitext and external links, get more data about the citations:
+            citation_data = wikitext_extract.extract_citation_info(external_URLs, wikitext)
+        except:
+            data['errors']="500"
+            return data
         
         #Split the article text based on its newlines (using these as segments):
         import re
@@ -155,3 +155,12 @@ def process_citation(cite_URL, settings):
         return citation_words
 
     return text_tagging.tag_citation_text(citation_words, text, settings)
+
+def get_first_major_location(data):
+    """Returns the best location in the article to start at when an article is entered"""
+    length_sum = 0
+    for segment in data['text_segments']:
+        length_sum+=len(segment[2])
+        if(length_sum>1000):
+            return segment[1]
+    return 1000

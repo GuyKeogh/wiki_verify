@@ -62,14 +62,17 @@ def correct():
                             debug=data,
                             )
 
-@app.route('/article_dynamic', methods = ["POST"])
-def article_dynamic():
+@app.route('/article', methods = ["POST"])
+def article():
     filtered_name = session['filtered_name']
     data = session['data']
     settings = session['settings']
     language = settings['language']
 
-    data['segment']+=1000
+    if(data['segment'] == 0):
+        data['segment'] = main.get_first_major_location(data)
+    else:
+        data['segment']+=1000
     data = main.main(filtered_name,data,settings)
 
     URLs_failed = []
@@ -77,7 +80,11 @@ def article_dynamic():
         if URL and URL != '' and data['processed_citations'][URL]['text'] == '404':
             URLs_failed.append(URL)
 
-    return render_template("article.html",
+    html_page = "article.html"
+    if len(URLs_failed) != 0:
+        html_page = "article_errors.html"
+
+    return render_template(html_page,
                             text=data['HTML_out'],
                             page=filtered_name,
                             language=language,
@@ -86,8 +93,9 @@ def article_dynamic():
                             debug=data,
                             )
 
-@app.route('/article', methods = ["POST"])
-def article():
+@app.route('/article_start', methods = ["POST"])
+def article_start():
+    print("entered start")
     """Display the article, including calling the processing of it"""
     #Getting from article:
     POST_name = request.form["page"] #Article name input by user
@@ -147,12 +155,10 @@ def article():
         error_message = "A problem occurred grabbing the citations from Wikipedia, please try again. This error has been recorded."
         return render_template("index.html",
                                error_message = error_message)
-    else: #Everything is fine
-        return render_template("article.html",
-                               text=data['HTML_out'],
-                               debug=data,
-                               page=filtered_name,
-                               language=language)
+    return render_template("article_start.html",
+                        page=filtered_name,
+                        language=language
+                        )
 
 @app.route('/article/<path:POST_name>')
 def article_named(POST_name):

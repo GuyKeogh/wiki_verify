@@ -12,23 +12,34 @@ def count_newlines_before_position(newline_indexes, start_position):
         index_count+=1
     return 0
 
+def pair_brackets(link_starts, link_ends):
+    """When brackets are within each other, e.g. [[file:photo.jpg|... | text leading to [[link]]]],
+    pairing the first [[ with the next ]] doesn't work; this function returns the proper pairing"""
+    index = 0
+    for bracket in link_starts:
+        if(index+1 < len(link_starts) and index+1 < len(link_ends)):
+            if link_starts[index+1] < link_ends[index]:
+                final_end_pair = link_ends[index]
+                link_ends[index] = link_ends[index+1]
+                link_ends[index+1] = final_end_pair
+        index+=1
+    return tuple((link_starts, link_ends))
+
 def wikitext_to_plaintext(wikitext):
-    print(wikitext)
     import re
-    plaintext = "_PARAGRAPHSTART_ "+wikitext #Each segments is its own paragraph, so add tag
+    plaintext = "_PARAGRAPHSTART_ "+wikitext #Each segment is its own paragraph, so add tag
 
     plaintext = plaintext.replace("\n", "") #Remove newlines (\n)
 
     #Bold text:
-    index = 0
-    bold_indexes = [m.start() for m in re.finditer("'''", plaintext)]
-    for position in reversed(bold_indexes):
-        replacement_text = "_BOLDSTART_"
-        if index%2 == 1: # Odd numbered
-            replacement_text = "_BOLDEND_"
-
-        wikitext = wikitext[:position] + replacement_text + wikitext[position+3:]
-        index+=1
+    quantity = int(len([m.start() for m in re.finditer("'''", plaintext)])/2)
+    for i in range(0, quantity):
+        plaintext = plaintext.replace("'''", "_BOLDSTART_ ", 1).replace("'''", " _BOLDEND_", 1)
+    
+    #Italic text:
+    quantity = int(len([m.start() for m in re.finditer("''", plaintext)])/2)
+    for i in range(0, quantity):
+        plaintext = plaintext.replace("''", "_ITALICSTART_ ", 1).replace("''", " _ITALICEND_", 1)
     
     #Remove text between normal ref tags:
     ref_starts = [m.start() for m in re.finditer('<ref>', plaintext)]
@@ -48,20 +59,26 @@ def wikitext_to_plaintext(wikitext):
     #Handle wikilinks (e.g. [[Wikipedia]] and [[text you see|Wikipedia]] )
     link_starts = [m.start() for m in re.finditer('\\[\\[', plaintext)]
     link_ends = [m.start() for m in re.finditer(']]', plaintext)]
+
+    (link_starts, link_ends) = pair_brackets(link_starts, link_ends)
+
     link_starts = link_starts[::-1] #Reverse list
     link_ends = link_ends[::-1]
     if link_starts and len(link_starts) == len(link_ends):
         index = 0
         for start in link_starts:
+            offset_size = 0
             wikilink_text = plaintext[link_starts[index]+2:link_ends[index]] #+2 to ignore the [[
-            if "Category:" in wikilink_text or "File:" in wikilink_text:
-                # TODO: Handle wikilinks in these, e.g. [[File:whatever.jpg|thumb|200px| image description and [[page]]]]
+            if "Category:" in wikilink_text:
                 wikilink_text = ""
+            if "File:" in wikilink_text:
+                wikilink_text = ""
+                offset_size = 5
             elif "|" in wikilink_text:
                 wikilink_text = wikilink_text.partition("|")[2]
             
             #Text until the start of the wikilink + the new text + text after the wikilink:
-            plaintext = plaintext[:link_starts[index]] + wikilink_text + plaintext[link_ends[index]+2:]
+            plaintext = plaintext[:link_starts[index]] + wikilink_text + plaintext[link_ends[index]+2-offset_size:]
             index+=1
 
     #Replace headers with tags:
