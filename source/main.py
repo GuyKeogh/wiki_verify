@@ -17,6 +17,7 @@ def main(article_title, data, settings):
     external_URLs = data['external_URLs']
     text_segments = data['text_segments']
     citation_data = data['citation_data']
+    section_ends = data['section_ends']
     processed_citations = data['processed_citations']
     
     HTML_out = "blank"
@@ -66,7 +67,7 @@ def main(article_title, data, settings):
             
             #Find the relevant text covering that segment
             plaintext = wikitext_extract.wikitext_to_plaintext(wikitext[position:position_end]) #Text covering the segment, stripped of refs and templates
-            if plaintext:
+            if plaintext and not plaintext.isspace():
                 if not if_in_template:
                     if '{{' in plaintext:
                         if_in_template = True
@@ -78,6 +79,7 @@ def main(article_title, data, settings):
                             if start_pos >= position and end_pos <= position_end:
                                 relevant_citations.append(external_URL)
                         text_segments.append(tuple((position, position_end, plaintext, relevant_citations)))
+                        section_ends.append(position_end)
                 else: #In a template
                     if '}}' in plaintext:
                         if_in_template = False
@@ -126,6 +128,7 @@ def main(article_title, data, settings):
         "segment_last": segment_last,
         "external_URLs": external_URLs,
         "text_segments": text_segments,
+        "section_ends": section_ends,
         "citation_data": citation_data,
         "processed_citations": processed_citations,
         "HTML_out": HTML_out,
@@ -163,3 +166,12 @@ def get_first_major_location(data):
         if(length_sum>1000):
             return segment[1]
     return 1000
+
+def get_next_major_location(data):
+    for section in data['section_ends']:
+        if data['segment'] < section:            
+            if section - data['segment'] > 500:
+                return section
+            else:
+                return data['segment']+500
+    return data['section_ends'][-1]

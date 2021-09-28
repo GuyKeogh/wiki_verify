@@ -72,7 +72,7 @@ def article():
     if(data['segment'] == 0):
         data['segment'] = main.get_first_major_location(data)
     else:
-        data['segment']+=1000
+        data['segment'] = main.get_next_major_location(data)
     data = main.main(filtered_name,data,settings)
 
     URLs_failed = []
@@ -135,6 +135,7 @@ def article_start():
             "segment_last": 0,
             "external_URLs": [],
             "text_segments": [],
+            "section_ends": [],
             "citation_data": [], # Position of each citation in the original wikitext
             "processed_tags": [],
             "processed_citations": dict(), # Text and tagged words of each citation URL
