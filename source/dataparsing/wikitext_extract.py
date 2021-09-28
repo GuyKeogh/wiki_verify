@@ -27,9 +27,8 @@ def pair_brackets(link_starts, link_ends):
 
 def wikitext_to_plaintext(wikitext):
     import re
+    from wikitextparser import remove_markup
     plaintext = "_PARAGRAPHSTART_ "+wikitext #Each segment is its own paragraph, so add tag
-
-    plaintext = plaintext.replace("\n", "") #Remove newlines (\n)
 
     #Bold text:
     quantity = int(len([m.start() for m in re.finditer("'''", plaintext)])/2)
@@ -39,57 +38,18 @@ def wikitext_to_plaintext(wikitext):
     #Italic text:
     quantity = int(len([m.start() for m in re.finditer("''", plaintext)])/2)
     for i in range(0, quantity):
-        plaintext = plaintext.replace("''", "_ITALICSTART_ ", 1).replace("''", " _ITALICEND_", 1)
-    
-    #Remove text between normal ref tags:
-    ref_starts = [m.start() for m in re.finditer('<ref>', plaintext)]
-    ref_ends = [m.start() for m in re.finditer('</ref>', plaintext)]
-    ref_starts = ref_starts[::-1] #Reverse list
-    ref_ends = ref_ends[::-1]
-    if ref_starts and len(ref_starts) == len(ref_ends):
-        index = 0
-        for start in ref_starts:
-            plaintext = plaintext[:ref_starts[index]] + "" + plaintext[ref_ends[index]+6:]
-            index+=1
-    plaintext = re.sub(r'\<.*?\>', '', plaintext) #Remove <ref name=":0">, etc
-
-    plaintext = re.sub(r'{{([^"]*)}}', "", plaintext) #Remove templates: {{ }} and all text in them
-    plaintext = re.sub(r'{([^"]*)}', "", plaintext) #Remove templates: { } and all text in them
-
-    #Handle wikilinks (e.g. [[Wikipedia]] and [[text you see|Wikipedia]] )
-    link_starts = [m.start() for m in re.finditer('\\[\\[', plaintext)]
-    link_ends = [m.start() for m in re.finditer(']]', plaintext)]
-
-    (link_starts, link_ends) = pair_brackets(link_starts, link_ends)
-
-    link_starts = link_starts[::-1] #Reverse list
-    link_ends = link_ends[::-1]
-    if link_starts and len(link_starts) == len(link_ends):
-        index = 0
-        for start in link_starts:
-            offset_size = 0
-            wikilink_text = plaintext[link_starts[index]+2:link_ends[index]] #+2 to ignore the [[
-            if "Category:" in wikilink_text:
-                wikilink_text = ""
-            if "File:" in wikilink_text:
-                wikilink_text = ""
-                offset_size = 5
-            elif "|" in wikilink_text:
-                wikilink_text = wikilink_text.partition("|")[2]
-            
-            #Text until the start of the wikilink + the new text + text after the wikilink:
-            plaintext = plaintext[:link_starts[index]] + wikilink_text + plaintext[link_ends[index]+2-offset_size:]
-            index+=1
+        plaintext = plaintext.replace("''", " _ITALICSTART_ ", 1).replace("''", " _ITALICEND_ ", 1)
 
     #Replace headers with tags:
-    if plaintext.startswith("_PARAGRAPHSTART_ ="):
+    if plaintext.startswith("_PARAGRAPHSTART_ \n="):
         header_count = plaintext.count('=')
         if header_count%2 == 0: #Must have an even number of ='s signs
             header_number = int(header_count/2)
             header_text = "="*header_number
             plaintext = plaintext.replace(header_text, " _HEADER"+str(header_number)+"START_ ", 1)
             plaintext = plaintext.replace(header_text, " _HEADER"+str(header_number)+"END_ ", 1)
-
+    
+    plaintext = remove_markup(plaintext)
     return plaintext + " _PARAGRAPHEND_"
 
 def extract_citation_info(external_URLs, wikitext):

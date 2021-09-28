@@ -22,7 +22,6 @@
 			window.addEventListener('pageshow',function(event){reset()});
 			window.onbeforeunload = clear_session;
 			function reset(){
-				document.getElementById("TextHidden").style.display = "none";
 				document.getElementById("submitBox").disabled = false;
 			}
 			function ToggleHidden(){

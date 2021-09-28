@@ -44,7 +44,6 @@ def main(article_title, data, settings):
 
         try: #Download article
             wikitext = web_scraper.download_wikitext(article_title,settings['language'])
-            data['wikitext'] = wikitext #For debugging
             #Using wikitext and external links, get more data about the citations:
             citation_data = wikitext_extract.extract_citation_info(external_URLs, wikitext)
         except:

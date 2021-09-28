@@ -139,7 +139,6 @@ def article_start():
             "processed_tags": [],
             "processed_citations": dict(), # Text and tagged words of each citation URL
             "errors": "",
-            "wikitext": "", # Original Wikipedia wikitext, for debugging
             "reprocess?": False
     }
     data = main.main(filtered_name,data,settings)
