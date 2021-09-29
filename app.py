@@ -59,7 +59,6 @@ def correct():
                             language=language,
                             URLs_failed=URLs_failed,
                             URLs_failed_count=len(URLs_failed),
-                            debug=data,
                             )
 
 @app.route('/article', methods = ["POST"])
@@ -90,7 +89,6 @@ def article():
                             language=language,
                             URLs_failed=URLs_failed,
                             URLs_failed_count=len(URLs_failed),
-                            debug=data,
                             )
 
 @app.route('/article_start', methods = ["POST"])
