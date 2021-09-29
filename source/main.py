@@ -76,7 +76,10 @@ def main(article_title, data, settings):
                         relevant_citations = []
                         for citation in citation_data:
                             (start_pos, end_pos, external_URL, newline_count, citation_group) = citation
-                            if start_pos >= position and end_pos <= position_end:
+                            if not data['if_attach_all_citations']: # Default: citations are only evaluated when they're in same paragraph as text
+                                if start_pos >= position and end_pos <= position_end:
+                                    relevant_citations.append(external_URL)
+                            else: # Use every citation in the article to verify every paragraph
                                 relevant_citations.append(external_URL)
                         text_segments.append(tuple((position, position_end, plaintext, relevant_citations)))
                         section_ends.append(position_end)
@@ -130,6 +133,7 @@ def main(article_title, data, settings):
         "text_segments": text_segments,
         "section_ends": section_ends,
         "citation_data": citation_data,
+        "if_attach_all_citations": data['if_attach_all_citations'],
         "processed_citations": processed_citations,
         "HTML_out": HTML_out,
         "errors": ""

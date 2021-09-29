@@ -106,9 +106,13 @@ def article_start():
 
     #Settings checkboxes. These are only delivered by POST if they are checked, so assume they are False unless delivered:
     if_quote = if_cardinal_number = if_singular_proper_noun = if_noun = if_adjective = False
+    if_attach_all_citations = True
     if request.form.get("ifDefaultSettings"):
         if_quote = if_cardinal_number = if_singular_proper_noun = True
+        if_attach_all_citations = False
     else:
+        if request.form.get("attach_all_citations_check"):
+            if_quote = False
         if request.form.get("quote_check"):
             if_quote = True
         if request.form.get("CD_check"):
@@ -140,6 +144,7 @@ def article_start():
             "processed_tags": [],
             "processed_citations": dict(), # Text and tagged words of each citation URL
             "errors": "",
+            "if_attach_all_citations": if_attach_all_citations,
             "reprocess?": False
     }
     data = main.main(filtered_name,data,settings)
