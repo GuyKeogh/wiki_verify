@@ -7,7 +7,7 @@ from os import urandom
 
 __FLASK_SECRET__ = str(urandom(24))
 __IF_PRODUCTION__ = False
-__VERSION__ = "0.9.7"
+__VERSION__ = "0.9.9"
 __IF_WEB__ = False
 
 #Don't auto-scrape these URLs, and instead ask for copy-and-paste:
