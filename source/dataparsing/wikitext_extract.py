@@ -48,8 +48,6 @@ def wikitext_to_plaintext(wikitext):
             header_text = "="*header_number
             plaintext = plaintext.replace(header_text, " _HEADER"+str(header_number)+"START_ ", 1)
             plaintext = plaintext.replace(header_text, " _HEADER"+str(header_number)+"END_ ", 1)
-    
-    print(plaintext)
 
     #Remove text between normal ref tags:
     ref_starts = [m.start() for m in re.finditer('<ref>', plaintext)]

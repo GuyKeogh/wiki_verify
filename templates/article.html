@@ -20,7 +20,6 @@
 	<body>
 		<script>
 			window.addEventListener('pageshow',function(event){reset()});
-			window.onbeforeunload = clear_session;
 			function reset(){
 				document.getElementById("submitBox").disabled = false;
 			}
@@ -31,10 +30,6 @@
 				}else{
 					hiddenOptions.style.display = "block";
 				}
-			}
-			function clear_session(){
-				// do something...
-				return null;
 			}
 		</script>
 		<center><h2>{{page}}</h2></center>

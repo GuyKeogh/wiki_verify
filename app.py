@@ -95,7 +95,6 @@ def article():
 
 @app.route('/article_start', methods = ["POST"])
 def article_start():
-    print("entered start")
     """Display the article, including calling the processing of it"""
     #Getting from article:
     POST_name = request.form["page"] #Article name input by user

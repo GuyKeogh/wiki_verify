@@ -21,10 +21,10 @@
 	<body>
 		<script>
 			window.addEventListener('pageshow',function(event){reset()});
-			window.onbeforeunload = clear_session;
 			function reset(){
 				document.getElementById("TextHidden").style.display = "none";
 				document.getElementById("submitBox").disabled = false;
+				document.getElementById("correctionForm").checked = false;
 			}
 			function ToggleHidden(){
 				var hiddenOptions = document.getElementById("TextHidden");
@@ -33,10 +33,6 @@
 				}else{
 					hiddenOptions.style.display = "block";
 				}
-			}
-			function clear_session(){
-				// do something...
-				return null;
 			}
 		</script>
 	
@@ -47,7 +43,7 @@
 		<form class="inline-form" action="/correct" method="POST" id="articleForm">
 		<div id="TextHidden" style="display:none">
 		{{URLs_failed}}<br>
-		Copy-and-paste relevant text from these URLs, then submit:
+		Copy-and-paste an URL above, then paste its text directly after that; this can be repeated for every URL. When finished, submit:
 		<textarea id="correction_text" name="correction_text" rows="5" style="width: 100%"></textarea>
 		<input type="hidden" type="text" name="session_ID" readonly="readonly" value="{{session_ID}}"><br>
 		<button class="btn btn-primary" id="submitBox" onclick="this.disabled=true;document.getElementById('articleForm').submit();">Submit</button>

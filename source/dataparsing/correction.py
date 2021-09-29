@@ -53,8 +53,6 @@ def add_input(input_text, data, settings):
             citation_words = text_tagging.tag_citation_text(citation_words, text, settings)
             processed_citations[external_URL] = citation_words
             indexes_index+=1
-
-            #raise ValueError('A very specific bad thing happened.')
     
     data['processed_citations'] = processed_citations
     return data
