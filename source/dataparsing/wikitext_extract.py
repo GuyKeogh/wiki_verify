@@ -49,6 +49,20 @@ def wikitext_to_plaintext(wikitext):
             plaintext = plaintext.replace(header_text, " _HEADER"+str(header_number)+"START_ ", 1)
             plaintext = plaintext.replace(header_text, " _HEADER"+str(header_number)+"END_ ", 1)
     
+    print(plaintext)
+
+    #Remove text between normal ref tags:
+    ref_starts = [m.start() for m in re.finditer('<ref>', plaintext)]
+    ref_ends = [m.start() for m in re.finditer('</ref>', plaintext)]
+    ref_starts = ref_starts[::-1] #Reverse list
+    ref_ends = ref_ends[::-1]
+    if ref_starts and len(ref_starts) == len(ref_ends):
+        index = 0
+        for start in ref_starts:
+            plaintext = plaintext[:ref_starts[index]] + "" + plaintext[ref_ends[index]+6:]
+            index+=1
+    plaintext = re.sub(r'\<.*?\>', '', plaintext) #Remove <ref name=":0">, etc
+    
     plaintext = remove_markup(plaintext)
     return plaintext + " _PARAGRAPHEND_"
 
