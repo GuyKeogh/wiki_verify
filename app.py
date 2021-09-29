@@ -162,7 +162,7 @@ def article_start():
                         language=language
                         )
 
-@app.route('/article/<path:POST_name>')
+@app.route('/article/<path:POST_name>', methods = ["GET"])
 def article_named(POST_name):
     """Alternate method of inputting title, allowing /article/<article name> and /article/<Wikipedia page URL>"""
     #Defaults:
@@ -173,43 +173,51 @@ def article_named(POST_name):
     #/article/<Wikipedia page URL> :
     if ".wikipedia.org/wiki/" in POST_name:
         (language, POST_name) = filter_title.from_url(POST_name)
-    
     (filtered_name,if_error,error) = filter_title.handle_input_title_language(POST_name,language)
     if if_error:
         return render_template("index.html",error_message = error)
     
-    settings = (language, if_cardinal_number, if_adjective, if_noun, if_singular_proper_noun, if_quote)
+    settings = {
+        "language": language,
+        "quote?": if_quote,
+        "CD?": if_cardinal_number,
+        "NNP?": if_singular_proper_noun,
+        "NN?": if_noun,
+        "JJ?": if_adjective
+    }
     #Finished checks
     #Submit to backend:
-    output = main.main(article_title=filtered_name,
-                        if_ignore_URL_error=True,
-                        settings=settings)
-    (html_output,external_URLs_failed,data,text_quotes) = output
-    fail_count = len(external_URLs_failed)
-    
+    data = { #No data yet
+            "segment": 0,
+            "segment_last": 0,
+            "external_URLs": [],
+            "text_segments": [],
+            "section_ends": [],
+            "citation_data": [], # Position of each citation in the original wikitext
+            "processed_tags": [],
+            "processed_citations": dict(), # Text and tagged words of each citation URL
+            "errors": "",
+            "if_attach_all_citations": False,
+            "reprocess?": False
+    }
+    data = main.main(filtered_name,data,settings)
     filtered_name = filtered_name.replace("_"," ") #Remove possible _'s in title before showing on screen
-
     session['filtered_name'] = filtered_name
     session['data'] = data
     session['settings'] = settings
 
-    if fail_count>0: #Create session to request copy-and-paste of failed URLs
-        return render_template("article_errors.html",
-                               text=html_output,
-                               page=filtered_name,
-                               language=language,
-                               error_count=fail_count,
-                               URLs_failed=external_URLs_failed
-                               )
     #Using backend output, render HTML:
-    if(html_output=="500"): #Generic server error
+    if(data['errors']=="500"): #Generic server error
         return render_template("index.html",
-                               error_message = "The article does not exist (title is case-sensitive), or another error occurred downloading the article.")
-    else: #Everything is fine
-        return render_template("article.html",
-                               text=html_output,
-                               page=filtered_name,
-                               language=language)
+                               error_message = "The article does not exist (title is case-sensitive), or another error occurred.")
+    elif(data['errors']=="_ERROR: problem getting external_URLs_"): 
+        error_message = "A problem occurred grabbing the citations from Wikipedia, please try again. This error has been recorded."
+        return render_template("index.html",
+                               error_message = error_message)
+    return render_template("article.html",
+                        page=filtered_name,
+                        language=language
+                        )
 
 @app.route('/robots.txt')
 def robots():
