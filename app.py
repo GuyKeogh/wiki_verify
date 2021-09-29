@@ -9,7 +9,10 @@ from os import urandom, cpu_count
 from datetime import timedelta
 from flask import Flask, session, request, render_template, send_file
 from flask_session import Session
-from source import main, filter_title, __metadata__, correction
+
+from source import main, __metadata__
+from source.io import filter_title
+from source.dataparsing import correction
 
 app = Flask(__name__)
 
@@ -20,7 +23,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_PERMANENT'] = True #So thresholds can be used
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1) #Sessions expire after 30 minutes
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1) #Sessions expire after 1 hour
 app.config['SESSION_FILE_THRESHOLD'] = 100 #How many files under flask_session before it starts deleting oldest
 server_session = Session(app)
 
@@ -32,21 +35,66 @@ def index():
 @app.route('/correct', methods = ["POST"])
 def correct():
     """When downloading citations failed, this allows the user to copy-and-paste them and continue"""
-    POST_session = request.form["session_ID"]
-    try:
-        (title, data, text_quotes, settings) = session[POST_session]
-        input_text = request.form["correction_text"]
-        html_output = correction.correction(title,data,input_text,text_quotes,settings)
-        return render_template("article.html",
-                               text=html_output,
-                               page=title,
-                               language=settings[0])
-    except:
-        error_message = "The session has expired, please try again. You can use the back button in your browser to access your inputted text."
-        return render_template("index.html", error_message=error_message)
+    input_text = request.form["correction_text"]
+    
+    filtered_name = session['filtered_name']
+    data = session['data']
+    settings = session['settings']
+    language = settings['language']
+
+    if len(input_text) > 10:
+        data['reprocess?'] = True #Reprocess all data
+        data = correction.add_input(input_text, data, settings)
+
+    data = main.main(filtered_name, data, settings)
+
+    URLs_failed = []
+    for URL in data['processed_citations']:
+        if URL and URL != '' and data['processed_citations'][URL]['text'] == '404':
+            URLs_failed.append(URL)
+    
+    return render_template("article.html",
+                            text=data['HTML_out'],
+                            page=filtered_name,
+                            language=language,
+                            URLs_failed=URLs_failed,
+                            URLs_failed_count=len(URLs_failed),
+                            debug=data,
+                            )
 
 @app.route('/article', methods = ["POST"])
 def article():
+    filtered_name = session['filtered_name']
+    data = session['data']
+    settings = session['settings']
+    language = settings['language']
+
+    if(data['segment'] == 0):
+        data['segment'] = main.get_first_major_location(data)
+    else:
+        data['segment'] = main.get_next_major_location(data)
+    data = main.main(filtered_name,data,settings)
+
+    URLs_failed = []
+    for URL in data['processed_citations']:
+        if URL and URL != '' and data['processed_citations'][URL]['text'] == '404':
+            URLs_failed.append(URL)
+
+    html_page = "article.html"
+    if len(URLs_failed) != 0:
+        html_page = "article_errors.html"
+
+    return render_template(html_page,
+                            text=data['HTML_out'],
+                            page=filtered_name,
+                            language=language,
+                            URLs_failed=URLs_failed,
+                            URLs_failed_count=len(URLs_failed),
+                            debug=data,
+                            )
+
+@app.route('/article_start', methods = ["POST"])
+def article_start():
     """Display the article, including calling the processing of it"""
     #Getting from article:
     POST_name = request.form["page"] #Article name input by user
@@ -57,9 +105,13 @@ def article():
 
     #Settings checkboxes. These are only delivered by POST if they are checked, so assume they are False unless delivered:
     if_quote = if_cardinal_number = if_singular_proper_noun = if_noun = if_adjective = False
+    if_attach_all_citations = True
     if request.form.get("ifDefaultSettings"):
         if_quote = if_cardinal_number = if_singular_proper_noun = True
+        if_attach_all_citations = False
     else:
+        if request.form.get("attach_all_citations_check"):
+            if_quote = False
         if request.form.get("quote_check"):
             if_quote = True
         if request.form.get("CD_check"):
@@ -70,51 +122,48 @@ def article():
             if_noun = True
         if request.form.get("JJ_check"):
             if_adjective = True
-    settings = (language, if_cardinal_number, if_adjective, if_noun, if_singular_proper_noun, if_quote)
+    settings = {
+        "language": language,
+        "quote?": if_quote,
+        "CD?": if_cardinal_number,
+        "NNP?": if_singular_proper_noun,
+        "NN?": if_noun,
+        "JJ?": if_adjective
+    }
 
     #Finished checks
     #Submit to backend:
-    output = main.main(article_title=filtered_name,if_ignore_URL_error=True,settings=settings)
-    (html_output,external_URLs_failed,data,text_quotes) = output
-    fail_count = len(external_URLs_failed)
-    
-    if fail_count>0: #Create session to request copy-and-paste of failed URLs
-        session_ID = str(urandom(24))
-        session_elem = (filtered_name,
-                        data,
-                        text_quotes,
-                        settings
-                        )
-        session[session_ID] = session_elem
-        return render_template("article_errors.html",
-                               text=html_output,
-                               page=filtered_name,
-                               language=language,
-                               session_ID=session_ID,
-                               error_count=fail_count,
-                               URLs_failed=external_URLs_failed
-                               )
+    data = { #No data yet
+            "segment": 0,
+            "segment_last": 0,
+            "external_URLs": [],
+            "text_segments": [],
+            "section_ends": [],
+            "citation_data": [], # Position of each citation in the original wikitext
+            "processed_tags": [],
+            "processed_citations": dict(), # Text and tagged words of each citation URL
+            "errors": "",
+            "if_attach_all_citations": if_attach_all_citations,
+            "reprocess?": False
+    }
+    data = main.main(filtered_name,data,settings)
+    session['filtered_name'] = filtered_name
+    session['data'] = data
+    session['settings'] = settings
+
     #Using backend output, render HTML:
-    if(html_output=="500"): #Generic server error
+    if(data['errors']=="500"): #Generic server error
         return render_template("index.html",
                                error_message = "The article does not exist (title is case-sensitive), or another error occurred.")
-    elif(html_output=="_ERROR: too many external_URLs_"): 
-        max_URL = str(__metadata__.__WEB_EXTERNAL_URL_LIMIT__)
-        error_message = "There are too many citations in the article (over "+max_URL+"). Note: this limit does not apply with the desktop program."
-        return render_template("index.html",
-                               error_message = error_message)
-    elif(html_output=="_ERROR: problem getting external_URLs_"): 
+    elif(data['errors']=="_ERROR: problem getting external_URLs_"): 
         error_message = "A problem occurred grabbing the citations from Wikipedia, please try again. This error has been recorded."
         return render_template("index.html",
                                error_message = error_message)
-    else: #Everything is fine
-        session.clear()
-        return render_template("article.html",
-                               text=html_output,
-                               page=filtered_name,
-                               language=language)
+    return render_template("article_start.html",
+                        page=filtered_name,
+                        language=language
+                        )
 
-#@app.route('/article/')
 @app.route('/article/<path:POST_name>')
 def article_named(POST_name):
     """Alternate method of inputting title, allowing /article/<article name> and /article/<Wikipedia page URL>"""
@@ -141,19 +190,16 @@ def article_named(POST_name):
     fail_count = len(external_URLs_failed)
     
     filtered_name = filtered_name.replace("_"," ") #Remove possible _'s in title before showing on screen
+
+    session['filtered_name'] = filtered_name
+    session['data'] = data
+    session['settings'] = settings
+
     if fail_count>0: #Create session to request copy-and-paste of failed URLs
-        session_ID = str(urandom(24))
-        session_elem = (filtered_name,
-                        data,
-                        text_quotes,
-                        settings
-                        )
-        session[session_ID] = session_elem
         return render_template("article_errors.html",
                                text=html_output,
                                page=filtered_name,
                                language=language,
-                               session_ID=session_ID,
                                error_count=fail_count,
                                URLs_failed=external_URLs_failed
                                )
@@ -161,11 +207,6 @@ def article_named(POST_name):
     if(html_output=="500"): #Generic server error
         return render_template("index.html",
                                error_message = "The article does not exist (title is case-sensitive), or another error occurred downloading the article.")
-    elif(html_output=="_ERROR: too many external_URLs_"): 
-        max_URL = str(__metadata__.__WEB_EXTERNAL_URL_LIMIT__)
-        error_message = "There are too many citations in the article (over "+max_URL+"). Note: this limit does not apply with the desktop program."
-        return render_template("index.html",
-                               error_message = error_message)
     else: #Everything is fine
         return render_template("article.html",
                                text=html_output,

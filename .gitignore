@@ -1,4 +1,6 @@
 *.bat
 *.pyc
+.vscode
 __pycache__
 flask_session
+venv

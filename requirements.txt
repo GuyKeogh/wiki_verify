@@ -4,4 +4,4 @@ beautifulsoup4
 flask
 flask_session
 waitress
-webbrowser
+wikitextparser
