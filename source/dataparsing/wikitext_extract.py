@@ -12,19 +12,6 @@ def count_newlines_before_position(newline_indexes, start_position):
         index_count+=1
     return 0
 
-def pair_brackets(link_starts, link_ends):
-    """When brackets are within each other, e.g. [[file:photo.jpg|... | text leading to [[link]]]],
-    pairing the first [[ with the next ]] doesn't work; this function returns the proper pairing"""
-    index = 0
-    for bracket in link_starts:
-        if(index+1 < len(link_starts) and index+1 < len(link_ends)):
-            if link_starts[index+1] < link_ends[index]:
-                final_end_pair = link_ends[index]
-                link_ends[index] = link_ends[index+1]
-                link_ends[index+1] = final_end_pair
-        index+=1
-    return tuple((link_starts, link_ends))
-
 def wikitext_to_plaintext(wikitext):
     import re
     from wikitextparser import remove_markup
@@ -48,9 +35,8 @@ def wikitext_to_plaintext(wikitext):
             header_text = "="*header_number
             plaintext = plaintext.replace(header_text, " _HEADER"+str(header_number)+"START_ ", 1)
             plaintext = plaintext.replace(header_text, " _HEADER"+str(header_number)+"END_ ", 1)
-
     #Remove text between normal ref tags:
-    ref_starts = [m.start() for m in re.finditer('<ref>', plaintext)]
+    ref_starts = [m.start() for m in re.finditer('<ref', plaintext)]
     ref_ends = [m.start() for m in re.finditer('</ref>', plaintext)]
     ref_starts = ref_starts[::-1] #Reverse list
     ref_ends = ref_ends[::-1]
