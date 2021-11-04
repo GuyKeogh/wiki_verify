@@ -25,9 +25,11 @@ From the command line, when in the directory the files have been saved:
 
 ## Usage
 
-When the above is followed after a few seconds a HTML page will open. With the web app a redirect will be made to the created page once it is generated, and with the standalone app a file 'article.html' will be generated in the same directory and opened in the default web browser.
+When the above is followed after a few seconds a redirect will be made to the created page once it is generated. To process more of the article, click 'Next paragraph(s)', and additional text will be processed.
 
 Text that needs to be checked is highlighted in yellow and underlined, while text that appears to be fine is marked in green. These colours were chosen for colourblind-friendliness. If there is no marking that text has not been checked. Marked text can be hovered over to see information about the text.
+
+For articles with relatively few citations, consider unchecking "Require citation to be in the same paragraph as the text being verified" under default settings; with this unchecked, the text of every citation will be downloaded, processed, and applied to every paragraph upon submission, instead of citation texts being downloaded only as they're demanded and applied only to the paragraphs the citation is used within. Unchecking this will result in slower initial loading, and this cannot be done for articles with many citations due to the time required to download and process these in one go.
 
 ## Current limitations
 
