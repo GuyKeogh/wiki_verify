@@ -6,10 +6,33 @@
     <link rel="stylesheet" type="text/css" href="../static/bootstrap.css">
     <meta name="description" content="Wikipedia article fact-checker and verifier">
     <title>verify</title>
+
+    <script>
+        window.addEventListener('pageshow', function (event) {
+            reset()
+        });
+
+        function reset() {
+            document.getElementById("ifDefaultSettings").checked = true;
+            document.getElementById("OptionsHidden").style.display = "none";
+            document.getElementById("submitBox").disabled = false;
+        }
+
+        function ToggleHidden() {
+            var hiddenOptions = document.getElementById("OptionsHidden");
+            if (document.getElementById("ifDefaultSettings").checked == true) {
+                hiddenOptions.style.display = "none";
+            } else {
+                hiddenOptions.style.display = "block";
+            }
+        }
+    </script>
 </head>
+
+<body>
 <div class="container pt-3">
     <header>
-        <center>
+        <div class="center">
             <nav>
                 <a class="hyperlink p-2 text-dark" href="/">📝</a> |
                 <a class="hyperlink p-2 text-dark" href="https://en.wikipedia.org/wiki/User:Guy_Keogh/verify">Manual</a>
@@ -17,38 +40,16 @@
                 <a class="hyperlink p-2 text-dark" href="https://github.com/GuyKeogh/wiki_verify">Source</a> |
                 <a class="hyperlink p-2 text-dark" href="https://en.wikipedia.org/wiki/User_talk:Guy_Keogh">Feedback</a>
             </nav>
-        </center>
+        </div>
     </header>
 
     <div class="body_container">
-        <center>
+        <div class="center">
             <div class="container p-3 my-3 bg-dark text-white jumbotron jumbotron-fluid">
                 <h1 class="display-4">verify.toolforge.org</h1>
                 <p class="lead">Analyse English-language Wikipedia articles for uncited and inaccurate information.</p>
             </div>
-        </center>
-
-        <body>
-        <script>
-            window.addEventListener('pageshow', function (event) {
-                reset()
-            });
-
-            function reset() {
-                document.getElementById("ifDefaultSettings").checked = true;
-                document.getElementById("OptionsHidden").style.display = "none";
-                document.getElementById("submitBox").disabled = false;
-            }
-
-            function ToggleHidden() {
-                var hiddenOptions = document.getElementById("OptionsHidden");
-                if (document.getElementById("ifDefaultSettings").checked == true) {
-                    hiddenOptions.style.display = "none";
-                } else {
-                    hiddenOptions.style.display = "block";
-                }
-            }
-        </script>
+        </div>
 
         <h2>Analyse:</h2>
         <form class="inline-form" action="/article_start" method="POST" id="articleForm">
@@ -102,21 +103,23 @@
         </button>
         <br>
         <font color="cd2026">{{ error_message }}</font>
-        </body>
     </div>
+</div>
+<br>
+<br>
+</body>
 
-    <br>
-    <footer class="footer">
-        <div class="container">
-            <center>
-                <nav>
-                    By <a class="hyperlink" href="https://github.com/GuyKeogh">Guy Keogh</a>, under the <a
-                        class="hyperlink" href="https://github.com/GuyKeogh/wiki_verify/blob/master/LICENSE">2-Clause
-                    BSD</a> open-source license. Hosted on <a class="hyperlink" href="https://toolforge.org/">Wikimedia
-                    Toolforge</a>.
-                </nav>
-            </center>
+<br>
+<footer class="footer">
+    <div class="container">
+        <div class="center">
+            <nav>
+                By <a class="hyperlink" href="https://github.com/GuyKeogh">Guy Keogh</a>, under the <a
+                    class="hyperlink" href="https://github.com/GuyKeogh/wiki_verify/blob/master/LICENSE">2-Clause
+                BSD</a> open-source license. Hosted on <a class="hyperlink" href="https://toolforge.org/">Wikimedia Toolforge</a>.
+            </nav>
         </div>
-    </footer>
+    </div>
+</footer>
 </div>
 </html>

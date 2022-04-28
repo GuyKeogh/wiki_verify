@@ -1191,3 +1191,9 @@ span.bad {
 span.good {
     background-color: #b3e6b3;
 }
+
+.center {
+    text-align: center;
+    margin: auto;
+    justify-content: center;
+}
