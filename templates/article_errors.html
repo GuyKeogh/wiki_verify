@@ -1,70 +1,88 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="UTF-8">
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='bootstrap.css') }}">
-		<link rel="stylesheet" type="text/css" href="../static/bootstrap.css">
-		<title>{{page}} - verify.toolforge.org</title>
-	</head>
-	<div class="container pt-3">
-		<header>
-			<center>
-			<nav>
-				<a class="hyperlink p-2 text-dark" href="/">📝</a> |
-				<a class="hyperlink p-2 text-dark" href="https://en.wikipedia.org/wiki/User:Guy_Keogh/verify">Manual</a> |
-				<a class="hyperlink p-2 text-dark" href="https://github.com/GuyKeogh/wiki_verify">Source</a> |
-				<a class="hyperlink p-2 text-dark" href="https://en.wikipedia.org/wiki/User_talk:Guy_Keogh">Feedback</a>
-			</nav>
-			<center>
-		</header>
+<html lang="en">
+<head>
+    <meta content="text/html; charset=utf-8"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='bootstrap.css') }}">
+    <link rel="stylesheet" type="text/css" href="../static/bootstrap.css">
+    <title>{{ page }} - verify.toolforge.org</title>
 
-	<body>
-		<script>
-			window.addEventListener('pageshow',function(event){reset()});
-			function reset(){
-				document.getElementById("TextHidden").style.display = "none";
-				document.getElementById("submitBox").disabled = false;
-				document.getElementById("correctionForm").checked = false;
-			}
-			function ToggleHidden(){
-				var hiddenOptions = document.getElementById("TextHidden");
-				if(document.getElementById("correctionForm").checked==false){
-					hiddenOptions.style.display = "none";
-				}else{
-					hiddenOptions.style.display = "block";
-				}
-			}
-		</script>
-	
-		<div class="form-check form-switch">
-			<input class="form-check-input" onclick="ToggleHidden()" type="checkbox" value="correctionForm" id="correctionForm" checked="false">
-			<label class="form-check-label" for="correctionForm">Correct {{error_count}} URLs with errors?</label>
-		</div>
-		<form class="inline-form" action="/correct" method="POST" id="articleForm">
-		<div id="TextHidden" style="display:none">
-		{{URLs_failed}}<br>
-		Copy-and-paste an URL above, then paste its text directly after that; this can be repeated for every URL. When finished, submit:
-		<textarea id="correction_text" name="correction_text" rows="5" style="width: 100%"></textarea>
-		<input type="hidden" type="text" name="session_ID" readonly="readonly" value="{{session_ID}}"><br>
-		<button class="btn btn-primary" id="submitBox" onclick="this.disabled=true;document.getElementById('articleForm').submit();">Submit</button>
-		</div>
-		</form>
-		
-		<center><h2>{{page}}</h2></center>
-		{{text | safe}}
-		<br>
-		<center>
-		<form class="inline-form" action="/article" method="POST" id="articleForm">
-			<button class="btn btn-primary" id="submitBox" onclick="this.disabled=true;document.getElementById('articleForm').submit();">Next paragraph(s)</button>
-		</form>
-	</body>
+    <script>
+        window.addEventListener('pageshow', function (event) {
+            reset()
+        });
 
-	<footer class="footer">
-		<div class="container text-center p-3">
-			<nav>
-				User-generated content from {{language}}.wikipedia.org. Tool by <a class="hyperlink" href="https://github.com/GuyKeogh">Guy Keogh</a>, under the <a class="hyperlink" href="https://github.com/GuyKeogh/wiki_verify/blob/master/LICENSE">2-Clause BSD</a> open-source license. Hosted on <a class="hyperlink" href="https://toolforge.org/">Wikimedia Toolforge</a>.
-			</nav>
-		</div>
-	</footer>
-	</div>
+        function reset() {
+            document.getElementById("TextHidden").style.display = "none";
+            document.getElementById("submitBox").disabled = false;
+            document.getElementById("correctionForm").checked = false;
+        }
+
+        function ToggleHidden() {
+            var hiddenOptions = document.getElementById("TextHidden");
+            if (document.getElementById("correctionForm").checked == false) {
+                hiddenOptions.style.display = "none";
+            } else {
+                hiddenOptions.style.display = "block";
+            }
+        }
+    </script>
+</head>
+<body>
+<div class="container pt-3">
+    <header>
+        <div class="center">
+            <nav>
+                <a class="hyperlink p-2 text-dark" href="/">📝</a> |
+                <a class="hyperlink p-2 text-dark" href="https://en.wikipedia.org/wiki/User:Guy_Keogh/verify">Manual</a |
+                <a class="hyperlink p-2 text-dark" href="https://github.com/GuyKeogh/wiki_verify">Source</a> |
+                <a class="hyperlink p-2 text-dark" href="https://en.wikipedia.org/wiki/User_talk:Guy_Keogh">Feedback</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="form-check form-switch">
+        <input class="form-check-input" onclick="ToggleHidden()" type="checkbox" value="correctionForm"
+               id="correctionForm" checked="false">
+        <label class="form-check-label" for="correctionForm">Correct {{ error_count }} URLs with errors?</label>
+    </div>
+    <form class="inline-form" action="/correct" method="POST" id="articleForm">
+        <div id="TextHidden" style="display:none">
+            {{ URLs_failed }}<br>
+            Copy-and-paste an URL above, then paste its text directly after that; this can be repeated for every URL.
+            When finished, submit:
+            <textarea id="correction_text" name="correction_text" rows="5" style="width: 100%"></textarea>
+            <input type="hidden" type="text" name="session_ID" readonly="readonly" value="{{ session_ID }}"><br>
+            <button class="btn btn-primary" id="submitBox"
+                    onclick="this.disabled=true;document.getElementById('articleForm').submit();">Submit
+            </button>
+        </div>
+    </form>
+
+    <div class="center">
+        <h2>{{ page }}</h2>
+    </div>
+
+    {{ text | safe }}
+    <br>
+    <form class="inline-form" action="/article" method="POST" id="articleForm">
+        <button class="btn btn-primary" id="submitBox"
+                onclick="this.disabled=true;document.getElementById('articleForm').submit();">Next paragraph(s)
+        </button>
+    </form>
+
+</div>
+<br>
+<br>
+</body>
+
+<footer class="footer">
+    <div class="container text-center p-3">
+        <nav>
+            User-generated content from {{ language }}.wikipedia.org. Tool by <a class="hyperlink"
+                                                                                 href="https://github.com/GuyKeogh">Guy Keogh</a>, under the <a class="hyperlink"
+                                                                                                                                                href="https://github.com/GuyKeogh/wiki_verify/blob/master/LICENSE">2-Clause
+            BSD</a> open-source license. Hosted on <a class="hyperlink" href="https://toolforge.org/">Wikimedia Toolforge</a>.
+        </nav>
+    </div>
+</footer>
 </html>
