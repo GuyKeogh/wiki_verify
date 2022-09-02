@@ -47,7 +47,7 @@ def handle_input_title_language(POST_name, language):
 
 def filter_title(badtitle):
     """Remove excess whitespaces"""
-    output = re.sub("\s\s+", " ", badtitle.strip())
+    output = re.sub(r"\s\s+", " ", badtitle.strip())
     return output
 
 

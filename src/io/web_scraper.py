@@ -8,7 +8,6 @@ import re
 
 import requests
 from bs4 import BeautifulSoup
-
 from source import __metadata__
 
 
@@ -50,8 +49,6 @@ def generate_header(language=""):
 
 
 def download_wikitext(article_title, language):
-    import re
-
     response = requests.get(
         "https://" + language + ".wikipedia.org/w/api.php",
         params={
@@ -137,7 +134,7 @@ def download_external_URLs(article_title, language):
         for element in extracted_page:
             for key, value in element.items():
                 external_URLs.append(value)
-    except:
+    except Exception:
         return ["_ERROR: problem getting external_URLs_"]
 
     # Make sure all URLs unique, e.g. an external URL might be repeated twice, so don't download it twice

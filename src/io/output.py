@@ -94,18 +94,16 @@ def parse_HTML(data):
 
 def record_error(article_title, error):
     """If an error occurred, write the details of it to a file with the current timestamp"""
-    try:
-        file = open("errors.log", "a")
-        error_msg = error + " on article '" + article_title + "'"
-        file.write(error_msg)
-        file.close()
-    except:
-        ...
+    file = open("errors.log", "a")
+    error_msg = error + " on article '" + article_title + "'"
+    file.write(error_msg)
+    file.close()
 
 
 def encode_text(text):
     """Encode data to help prevent XSS attacks from text in article"""
-    # Most efficient way is to chain these together ( https://stackoverflow.com/questions/3411771/best-way-to-replace-multiple-characters-in-a-string )
+    # Most efficient way is to chain these together
+    # ( https://stackoverflow.com/questions/3411771/best-way-to-replace-multiple-characters-in-a-string )
     text = (
         text.replace("&", "&amp")
         .replace("<", "&lt")

@@ -1,10 +1,3 @@
-"""
-__description__ = "When given the list of external links in an article and the article wikitext, output details of each citation."
-__author__ = "Guy Keogh"
-__license__ = "BSD 2-Clause"
-"""
-
-
 def count_newlines_before_position(newline_indexes, start_position):
     index_count = 0
     for index in newline_indexes:
@@ -85,7 +78,8 @@ def extract_citation_info(external_URLs, wikitext):
         m.start() for m in re.finditer("</ref>|/>", wikitext)
     ]  # Normal cites end in '</ref>', but labels end in '/>'
 
-    # Ensure that all reference start indexes are before the end indexes (e.g. '/>' in '<br />' mixed in), and remove offending end indexes:
+    # Ensure that all reference start indexes are before the end indexes (e.g. '/>' in '<br />' mixed in),
+    # and remove offending end indexes:
     if len(reference_ends) > len(reference_starts):
         index = 0
         while index < len(reference_ends):
@@ -95,7 +89,8 @@ def extract_citation_info(external_URLs, wikitext):
 
     citations = (
         []
-    )  # List of tuples, with structure: (start_position, end_position, URL, how many newlines before start, label (optional))
+    )  # List of tuples, with structure: (start_position, end_position, URL, how many newlines before start,
+    # label (optional))
     label_dictionary = {}
 
     # Check which external_URL falls between the reference start and ends:
@@ -150,7 +145,8 @@ def extract_citation_info(external_URLs, wikitext):
                     ).group()  # Find first double quote after name=
                     citation_group = citation_group_quote[
                         1:-1
-                    ]  # We now have the group name, so we can look it up in the dictionary once that's fully made
+                    ]  # We now have the group name, so we can look it up in the dictionary once that's
+                    # fully made
                 else:
                     citation_group = citation_info[label_name_index:].replace(
                         "name=", ""

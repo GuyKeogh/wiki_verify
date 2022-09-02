@@ -4,9 +4,9 @@ __description__ = "Backend of verification tool"
 __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
-from source import __metadata__
-from source.dataparsing import article_standardise, text_tagging, wikitext_extract
-from source.io import output, web_scraper
+from src import __metadata__
+from src.dataparsing import text_tagging, wikitext_extract
+from src.io import output, web_scraper
 
 
 def main(article_title, data, settings):
@@ -24,18 +24,18 @@ def main(article_title, data, settings):
 
     if_evaluate_citations = True
     if (
-        settings["quote?"] == False
-        and settings["NNP?"] == False
-        and settings["JJ?"] == False
-        and settings["NN?"] == False
-        and settings["CD?"] == False
+        settings["quote?"] is False
+        and settings["NNP?"] is False
+        and settings["JJ?"] is False
+        and settings["NN?"] is False
+        and settings["CD?"] is False
     ):
         if_evaluate_citations = False
     # End of initialise
 
     # Start processing the article
     if (
-        segment == 0 and data["reprocess?"] == False
+        segment == 0 and data["reprocess?"] is False
     ):  # First run, so needed data isn't yet stored; get that data.
         try:  # Download list of external links ( FIXME: get it all from wikitext in future)
             if if_evaluate_citations:
@@ -49,7 +49,7 @@ def main(article_title, data, settings):
                     output.record_error(article_title, external_URLs[0])
                     data["errors"] = external_URLs[0]
                     return data
-        except:
+        except Exception:
             error_msg = "_ERROR: problem getting external_URLs_"
             data["errors"] = error_msg
             output.record_error(article_title, error_msg)
@@ -63,7 +63,7 @@ def main(article_title, data, settings):
             citation_data = wikitext_extract.extract_citation_info(
                 external_URLs, wikitext
             )
-        except:
+        except Exception:
             data["errors"] = "500"
             return data
 
@@ -123,7 +123,7 @@ def main(article_title, data, settings):
         for wiki_part in text_segments:
             if wiki_part[0] > segment_last and wiki_part[1] <= segment:
                 for cite in wiki_part[3]:  # Citations covering section
-                    if not cite in processed_citations:  # Don't have this citation yet
+                    if cite not in processed_citations:  # Don't have this citation yet
                         citation_words = process_citation(cite, settings)
                         processed_citations.update({cite: citation_words})
 

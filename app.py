@@ -5,16 +5,14 @@ __license__ = "BSD 2-Clause"
 """
 
 from datetime import timedelta
-
-# from datetime import datetime
-from os import cpu_count, urandom
+from os import cpu_count
 
 from flask import Flask, render_template, request, send_file, session
 
 from flask_session import Session
-from source import __metadata__, main
-from source.dataparsing import correction
-from source.io import filter_title
+from src import __metadata__, main
+from src.dataparsing import correction
+from src.io import filter_title
 
 app = Flask(__name__)
 
@@ -117,7 +115,8 @@ def article_start():
     if if_error:
         return render_template("index.html", error_message=error)
 
-    # Settings checkboxes. These are only delivered by POST if they are checked, so assume they are False unless delivered:
+    # Settings checkboxes. These are only delivered by POST if they are checked,
+    # so assume they are False unless delivered:
     if_quote = (
         if_cardinal_number
     ) = if_singular_proper_noun = if_noun = if_adjective = False
@@ -174,7 +173,10 @@ def article_start():
             error_message="The article does not exist (title is case-sensitive), or another error occurred.",
         )
     elif data["errors"] == "_ERROR: problem getting external_URLs_":
-        error_message = "A problem occurred grabbing the citations from Wikipedia, please try again. This error has been recorded."
+        error_message = (
+            "A problem occurred grabbing the citations from Wikipedia, please try again. "
+            "This error has been recorded."
+        )
         return render_template("index.html", error_message=error_message)
     return render_template("article_start.html", page=filtered_name, language=language)
 
@@ -234,7 +236,10 @@ def article_named(POST_name):
             error_message="The article does not exist (title is case-sensitive), or another error occurred.",
         )
     elif data["errors"] == "_ERROR: problem getting external_URLs_":
-        error_message = "A problem occurred grabbing the citations from Wikipedia, please try again. This error has been recorded."
+        error_message = (
+            "A problem occurred grabbing the citations from Wikipedia, please try again. "
+            "This error has been recorded."
+        )
         return render_template("index.html", error_message=error_message)
     return render_template("article.html", page=filtered_name, language=language)
 
