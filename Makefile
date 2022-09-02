@@ -6,11 +6,11 @@ fmt:
 .PHONY: lint
 lint:
 	poetry run flake8 .
+	poetry run mypy .
 
 .PHONY: test
-lint:
+test:
 	poetry run pytest tests
-	poetry run mypy .
 
 .PHONY: check
 check:
