@@ -5,6 +5,7 @@ __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
 
+
 def strip_end_sections(text):
     """Strip useless parts at end (refs, see also, etc)"""
     References_start = text.rfind("References")
@@ -23,4 +24,4 @@ def strip_end_sections(text):
     if end_of_document != -1:
         text = text[:end_of_document]
 
-    return(text)
+    return text

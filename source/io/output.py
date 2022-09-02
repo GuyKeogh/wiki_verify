@@ -5,18 +5,30 @@ __author__ = "Guy Keogh"
 __license__ = "BSD 2-Clause"
 """
 
-def parse_HTML(data):  
+
+def parse_HTML(data):
     """Create the final HTML that's output to the user"""
 
-    if_header2_open = if_header3_open = if_bold_open = if_italic_open = if_paragraph_open = False
+    if_header2_open = (
+        if_header3_open
+    ) = if_bold_open = if_italic_open = if_paragraph_open = False
 
     combined = ""
     for word in data:
         article_word = encode_text(word[0])
-        if(word[1]!="," and word[1]!= "'" and word[1]!= "." and word[0]!= "'s" #Punctuation that doesn't need space before it
-           and word[1]!="``" and word[1]!="''" and word[1]!='"'): #Quotation marks
+        if (
+            word[1] != ","
+            and word[1] != "'"
+            and word[1] != "."
+            and word[0] != "'s"  # Punctuation that doesn't need space before it
+            and word[1] != "``"
+            and word[1] != "''"
+            and word[1] != '"'
+        ):  # Quotation marks
             if word[0] == "_HEADER2START_":
-                combined = combined + "<h3>" #<h2> is too big, so consistently bring it down a number
+                combined = (
+                    combined + "<h3>"
+                )  # <h2> is too big, so consistently bring it down a number
                 if_header2_open = True
             elif word[0] == "_HEADER2END_":
                 combined = combined + "</h3>"
@@ -44,13 +56,27 @@ def parse_HTML(data):
             elif word[0] == "_PARAGRAPHEND_":
                 combined = combined + "</p>"
                 if_paragraph_open = False
-            elif word[2] == 'fail':
-                combined = combined + ''' <span class="bad" title="'''+word[1]+'''" >''' + article_word + "</span>"
-            elif word[2] == 'pass':
-                combined = combined + ''' <span class="good" title="'''+word[1]+'''" >''' + article_word + "</span>"
+            elif word[2] == "fail":
+                combined = (
+                    combined
+                    + ''' <span class="bad" title="'''
+                    + word[1]
+                    + """" >"""
+                    + article_word
+                    + "</span>"
+                )
+            elif word[2] == "pass":
+                combined = (
+                    combined
+                    + ''' <span class="good" title="'''
+                    + word[1]
+                    + """" >"""
+                    + article_word
+                    + "</span>"
+                )
             else:
                 combined = combined + " " + article_word
-        else: #Punctuation, so no space needed.
+        else:  # Punctuation, so no space needed.
             combined = combined + article_word
     if if_header2_open:
         combined = combined + "</h3>"
@@ -62,21 +88,29 @@ def parse_HTML(data):
         combined = combined + "</i>"
     if if_paragraph_open:
         combined = combined + "</p>"
-    
+
     return combined
+
 
 def record_error(article_title, error):
     """If an error occurred, write the details of it to a file with the current timestamp"""
     try:
-        file = open("errors.log", 'a')
+        file = open("errors.log", "a")
         error_msg = error + " on article '" + article_title + "'"
         file.write(error_msg)
         file.close()
     except:
         ...
 
+
 def encode_text(text):
     """Encode data to help prevent XSS attacks from text in article"""
-    #Most efficient way is to chain these together ( https://stackoverflow.com/questions/3411771/best-way-to-replace-multiple-characters-in-a-string )
-    text = text.replace('&','&amp').replace('<','&lt').replace('>','&gt').replace('"','&quot').replace("'",'&#x27')
+    # Most efficient way is to chain these together ( https://stackoverflow.com/questions/3411771/best-way-to-replace-multiple-characters-in-a-string )
+    text = (
+        text.replace("&", "&amp")
+        .replace("<", "&lt")
+        .replace(">", "&gt")
+        .replace('"', "&quot")
+        .replace("'", "&#x27")
+    )
     return text
