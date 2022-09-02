@@ -10,6 +10,7 @@ lint:
 .PHONY: test
 lint:
 	poetry run pytest tests
+	poetry run mypy .
 
 .PHONY: check
 check:
