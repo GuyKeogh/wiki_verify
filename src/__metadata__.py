@@ -10,8 +10,10 @@ __IF_PRODUCTION__ = False
 __VERSION__ = "0.9.91"
 __IF_WEB__ = False
 
-#Don't auto-scrape these URLs, and instead ask for copy-and-paste:
-__DO_NOT_SCRAPE_URLS__ = ["web.archive.org/web/",
-                          "archive.is/",
-                          "doi.org/",
-                          "google.com/"]
+# Don't auto-scrape these URLs, and instead ask for copy-and-paste:
+__DO_NOT_SCRAPE_URLS__ = [
+    "web.archive.org/web/",
+    "archive.is/",
+    "doi.org/",
+    "google.com/",
+]

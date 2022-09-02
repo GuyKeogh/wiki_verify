@@ -1,7 +1,0 @@
-nltk
-requests
-beautifulsoup4
-flask
-flask_session
-waitress
-wikitextparser
