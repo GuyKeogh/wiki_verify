@@ -8,8 +8,8 @@ from datetime import timedelta
 from os import cpu_count
 
 from flask import Flask, render_template, request, send_file, session
-
 from flask_session import Session
+
 from src import __metadata__, main
 from src.dataparsing import correction
 from src.io import filter_title

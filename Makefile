@@ -6,11 +6,11 @@ fmt:
 .PHONY: lint
 lint:
 	poetry run flake8 .
-	poetry run mypy .
+	poetry run mypy . --ignore-missing-imports
 
 .PHONY: test
 test:
-	poetry run pytest tests
+	PYTHONPATH=. poetry run pytest tests
 
 .PHONY: check
 check:
